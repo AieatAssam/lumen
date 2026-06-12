@@ -47,7 +47,6 @@ export default function App() {
 
   // ── Create worker once on mount ──
   useEffect(() => {
-    console.log('[Lumen] Creating worker...');
     const baseUrl = import.meta.env.BASE_URL;
     const worker = new Worker(baseUrl + 'worker.js');
 
@@ -55,7 +54,6 @@ export default function App() {
       const msg = e.data;
       switch (msg.type) {
         case 'log':
-          console.log('[WASM]', msg.message);
           break;
         case 'pixels': {
           const { data, width, height, samples: s } = msg;
@@ -76,7 +74,6 @@ export default function App() {
           activeRef.current = false;
           break;
         case 'ready':
-          console.log('[Lumen] WASM ready');
           setWasmReady(true);
           break;
       }
@@ -148,25 +145,36 @@ export default function App() {
   }, []);
 
   // ── Render pump ──
+  const pumpRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const startPump = useCallback(() => {
     setRendering(true);
     activeRef.current = true;
     startTimeRef.current = performance.now();
     setRenderTime(0); setRaysPerSec(0);
 
-    function pump() {
+    const w = workerRef.current;
+    if (!w) return;
+
+    // Post first render immediately
+    w.postMessage({ type: 'render', samples: 1 });
+
+    // Then pump at ~30 Hz
+    pumpRef.current = setInterval(() => {
       if (!activeRef.current) return;
-      const w = workerRef.current;
-      if (!w) return;
-      w.postMessage({ type: 'render', samples: 1 });
-      setTimeout(pump, 1000 / 30); // ~30 fps pump
-    }
-    pump();
+      const worker = workerRef.current;
+      if (!worker) return;
+      worker.postMessage({ type: 'render', samples: 1 });
+    }, 1000 / 30);
   }, []);
 
   const stopPump = useCallback(() => {
     setRendering(false);
     activeRef.current = false;
+    if (pumpRef.current) {
+      clearInterval(pumpRef.current);
+      pumpRef.current = null;
+    }
   }, []);
 
   const handleStart = useCallback(() => {
