@@ -38,6 +38,7 @@ export default function App() {
   const startTimeRef = useRef(0);
   const pendingFrameRef = useRef<ImageData | null>(null);
   const activeRef = useRef(false);       // true while pump is running
+  const wantsRenderRef = useRef(false);   // set by startPump, cleared by stopPump
   const sceneIdRef = useRef(0);
   const distanceRef = useRef(5.0);
   const yawRef = useRef(0);
@@ -72,9 +73,17 @@ export default function App() {
           setError(msg.message);
           setRendering(false);
           activeRef.current = false;
+          wantsRenderRef.current = false;
           break;
         case 'ready':
           setWasmReady(true);
+          break;
+        case 'done':
+          // Worker finished a render frame — send next if still active
+          if (wantsRenderRef.current) {
+            const w = workerRef.current;
+            if (w) w.postMessage({ type: 'render', samples: 1 });
+          }
           break;
       }
     };
@@ -83,6 +92,7 @@ export default function App() {
       setError(e.message || 'Worker error');
       setRendering(false);
       activeRef.current = false;
+      wantsRenderRef.current = false;
     };
 
     workerRef.current = worker;
@@ -103,10 +113,7 @@ export default function App() {
     if (!worker) return;
     // Stop any running render pump before re-init
     activeRef.current = false;
-    if (pumpRef.current) {
-      clearInterval(pumpRef.current);
-      pumpRef.current = null;
-    }
+    wantsRenderRef.current = false;
     setRendering(false);
     setSamples(0); samplesRef.current = 0;
     setRaysPerSec(0); setRenderTime(0);
@@ -164,37 +171,23 @@ export default function App() {
     return () => { running = false; cancelAnimationFrame(rafRef.current); };
   }, []);
 
-  // ── Render pump ──
-  const pumpRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  // ── Render pump (handshake pattern — no backlog) ──
   const startPump = useCallback(() => {
     setRendering(true);
     activeRef.current = true;
+    wantsRenderRef.current = true;
     startTimeRef.current = performance.now();
     setRenderTime(0); setRaysPerSec(0);
 
+    // Send first render frame — subsequent frames are triggered by 'done' callback
     const w = workerRef.current;
-    if (!w) return;
-
-    // Post first render immediately
-    w.postMessage({ type: 'render', samples: 1 });
-
-    // Then pump at ~30 Hz
-    pumpRef.current = setInterval(() => {
-      if (!activeRef.current) return;
-      const worker = workerRef.current;
-      if (!worker) return;
-      worker.postMessage({ type: 'render', samples: 1 });
-    }, 1000 / 30);
+    if (w) w.postMessage({ type: 'render', samples: 1 });
   }, []);
 
   const stopPump = useCallback(() => {
     setRendering(false);
     activeRef.current = false;
-    if (pumpRef.current) {
-      clearInterval(pumpRef.current);
-      pumpRef.current = null;
-    }
+    wantsRenderRef.current = false;
   }, []);
 
   const handleStart = useCallback(() => {

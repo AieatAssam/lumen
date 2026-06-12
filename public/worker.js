@@ -2,16 +2,16 @@
  * Lumen Web Worker (classic)
  * Loads the Emscripten-compiled WASM path tracer via importScripts.
  * WASM is loaded ONCE at startup; 'init' messages configure scene parameters.
+ * Rendering uses a handshake pattern: main thread sends 'render', worker
+ * sends back 'done' when complete, main thread sends next 'render'.
+ * This prevents message backlog that would defeat pause.
  */
 
 var wasmReady = false;
-var wasmLoading = false;
-var wasmFailed = false;
 var pixelsPtr = 0;
 var width = 0;
 var height = 0;
 var running = false;
-var pendingRender = false;
 
 self.onerror = function(e) {
   self.postMessage({
@@ -23,7 +23,6 @@ self.onerror = function(e) {
 function postPixels() {
   if (!wasmReady || !pixelsPtr) return;
   var size = width * height * 4;
-  // HEAPU8 is a top-level var declared by Emscripten glue, not on Module
   var raw = new Uint8ClampedArray(HEAPU8.buffer, pixelsPtr, size);
   var copy = new Uint8ClampedArray(size);
   copy.set(raw);
@@ -34,23 +33,22 @@ function postPixels() {
 }
 
 function doRender(samples) {
-  if (!wasmReady) return;
+  if (!wasmReady || running) return;
   running = true;
   Module._render(samples);
   postPixels();
   running = false;
-  if (pendingRender) { pendingRender = false; doRender(1); }
+  // Handshake: tell main thread we're ready for the next frame
+  self.postMessage({ type: 'done' });
 }
 
 // Emscripten Module — set BEFORE importScripts
 self.Module = {
   locateFile: function(path) {
-    // baseUrl is set from self.location (derived from worker script URL)
     return self._baseUrl + path;
   },
   onRuntimeInitialized: function() {
     wasmReady = true;
-    // Process any pending init
     var m = self._pendingInit;
     if (m) {
       width = m.width;
@@ -68,16 +66,14 @@ self.Module = {
   },
 };
 
-// Derive base URL from our own script location
+// Derive base URL from our own script location, load WASM immediately
 (function() {
   var url = self.location.href;
   var idx = url.lastIndexOf('/');
   self._baseUrl = url.substring(0, idx + 1);
-  // Load WASM immediately
   try {
     self.importScripts(self._baseUrl + 'tracer.js');
   } catch (err) {
-    wasmFailed = true;
     self.postMessage({ type: 'error', message: 'importScripts failed: ' + (err.message || err) });
   }
 })();
@@ -97,8 +93,7 @@ self.onmessage = function(e) {
         }
         break;
       case 'render':
-        if (running) { pendingRender = true; }
-        else doRender(msg.samples);
+        doRender(msg.samples || 1);
         break;
       case 'setCamera':
         if (!wasmReady) return;
