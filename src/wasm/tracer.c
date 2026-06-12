@@ -273,11 +273,10 @@ static void setup_checkerboard(void) {
     int blue  = add_material(v3(0.15,0.2,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
     int gold  = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.02f, 1, MAT_METAL);
     int sun   = add_material(v3(1,1,1), v3(20,18,15), 0, 1, MAT_EMISSIVE);
-    int sky   = add_material(v3(0.6,0.7,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* ceiling */
 
     /* Checkerboard floor — overlapping spheres for a smooth surface */
-    for (int ix = -5; ix <= 5; ix++) {
-        for (int iz = -4; iz <= 4; iz++) {
+    for (int ix = -7; ix <= 7; ix++) {
+        for (int iz = -6; iz <= 6; iz++) {
             int mat = ((ix + iz) & 1) ? white : black;
             /* Radius (0.95) overlaps spacing (1.5) for a continuous floor */
             add_sphere(v3((float)ix * 1.5f, -0.70f, (float)iz * 1.5f - 2.0f), 0.95f, mat);
@@ -290,9 +289,6 @@ static void setup_checkerboard(void) {
         add_sphere(v3((float)i * 2.5f, 3.0f, -2.0f + (float)i * 1.0f), 0.4f, red);
         add_sphere(v3((float)i * 2.5f, 4.5f, -2.0f + (float)i * 1.0f), 0.4f, red);
     }
-
-    /* Ceiling dome */
-    add_sphere(v3(0, 20.0f, 0), 15.0f, sky);
 
     /* Decorative spheres */
     add_sphere(v3(0, 0.6f, -2.5f), 0.6f, gold);

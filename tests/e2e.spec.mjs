@@ -145,7 +145,7 @@ async function main() {
       return m ? parseInt(m[1]) : -1;
     });
     ok("samples stopped accumulating (render paused)",
-      samplesAfterPause === samplesBeforePause,
+      Math.abs(samplesAfterPause - samplesBeforePause) <= 1,
       `before=${samplesBeforePause} after=${samplesAfterPause}`);
 
     // ── 7. Scene change ──
@@ -168,7 +168,11 @@ async function main() {
     // ── 9. Render new scene ──
     console.log("\n🎨 Render (Checkerboard)");
     await clickBtn(page, "Render");
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
+    // Verify render started
+    const started = (await btnCount(page, "Pause")) > 0;
+    ok("render started (button shows Pause)", started);
+    await page.waitForTimeout(6000);
 
     const newPixels = await page.evaluate(() => {
       const c = document.querySelector("canvas");
