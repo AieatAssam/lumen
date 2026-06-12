@@ -101,10 +101,16 @@ export default function App() {
     sceneIdRef.current = sceneId;
     const worker = workerRef.current;
     if (!worker) return;
+    // Stop any running render pump before re-init
+    activeRef.current = false;
+    if (pumpRef.current) {
+      clearInterval(pumpRef.current);
+      pumpRef.current = null;
+    }
+    setRendering(false);
     setSamples(0); samplesRef.current = 0;
     setRaysPerSec(0); setRenderTime(0);
-    setError(null); setRendering(false);
-    activeRef.current = false;
+    setError(null);
     worker.postMessage({
       type: 'init', width: CANVAS_W, height: CANVAS_H,
       sceneId, baseUrl: import.meta.env.BASE_URL,
@@ -118,11 +124,25 @@ export default function App() {
     pitchRef.current = pitch;
   }, [distance, yaw, pitch]);
 
-  const applyLookAt = useCallback(() => {
+  const applyLookAt = useCallback((dist: number, y: number, p: number) => {
     const w = workerRef.current;
     if (!w) return;
-    w.postMessage({ type: 'lookAt', distance, yaw, pitch });
-  }, [distance, yaw, pitch]);
+    w.postMessage({ type: 'lookAt', distance: dist, yaw: y, pitch: p });
+  }, []);
+
+  const doCamera = useCallback((fn: (d: number, y: number, p: number) => [number, number, number]) => {
+    const newDist = distanceRef.current;
+    const newYaw = yawRef.current;
+    const newPitch = pitchRef.current;
+    const [d, y, p] = fn(newDist, newYaw, newPitch);
+    setDistance(d);
+    setYaw(y);
+    setPitch(p);
+    distanceRef.current = d;
+    yawRef.current = y;
+    pitchRef.current = p;
+    applyLookAt(d, y, p);
+  }, [applyLookAt]);
 
   // ── Animation loop ──
   useEffect(() => {
@@ -190,17 +210,16 @@ export default function App() {
   // ── Keyboard camera controls ──
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const step = 5;
       switch (e.key) {
-        case 'ArrowLeft':  setYaw(y => y - step); applyLookAt(); break;
-        case 'ArrowRight': setYaw(y => y + step); applyLookAt(); break;
-        case 'ArrowUp':    setPitch(p => Math.min(89, p + step)); applyLookAt(); break;
-        case 'ArrowDown':  setPitch(p => Math.max(-89, p - step)); applyLookAt(); break;
+        case 'ArrowLeft':  doCamera((d, y, p) => [d, y - 5, p]); break;
+        case 'ArrowRight': doCamera((d, y, p) => [d, y + 5, p]); break;
+        case 'ArrowUp':    doCamera((d, y, p) => [d, y, Math.min(89, p + 5)]); break;
+        case 'ArrowDown':  doCamera((d, y, p) => [d, y, Math.max(-89, p - 5)]); break;
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [applyLookAt]);
+  }, [doCamera]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -250,11 +269,11 @@ export default function App() {
         <div className="rounded-xl border border-border/30 bg-card/50 p-4">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Camera — use arrow keys or drag</h3>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setDistance(d => Math.max(1, d - 1))}
+            <button onClick={() => doCamera((d, y, p) => [Math.max(1, d - 1), y, p])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Zoom in">
               <ZoomIn className="h-4 w-4" />
             </button>
-            <button onClick={() => setDistance(d => d + 1)}
+            <button onClick={() => doCamera((d, y, p) => [d + 1, y, p])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Zoom out">
               <ZoomOut className="h-4 w-4" />
             </button>
@@ -262,25 +281,25 @@ export default function App() {
 
             <div className="w-px h-6 bg-border/50 mx-1" />
 
-            <button onClick={() => { setYaw(y => y - 15); setTimeout(applyLookAt, 0); }}
+            <button onClick={() => doCamera((d, y, p) => [d, y - 15, p])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Pan left">
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <button onClick={() => { setYaw(y => y + 15); setTimeout(applyLookAt, 0); }}
+            <button onClick={() => doCamera((d, y, p) => [d, y + 15, p])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Pan right">
               <ArrowRight className="h-4 w-4" />
             </button>
-            <button onClick={() => { setPitch(p => Math.min(89, p + 10)); setTimeout(applyLookAt, 0); }}
+            <button onClick={() => doCamera((d, y, p) => [d, y, Math.min(89, p + 10)])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Tilt up">
               <ArrowUp className="h-4 w-4" />
             </button>
-            <button onClick={() => { setPitch(p => Math.max(-89, p - 10)); setTimeout(applyLookAt, 0); }}
+            <button onClick={() => doCamera((d, y, p) => [d, y, Math.max(-89, p - 10)])}
               className="rounded-lg border border-border/50 bg-card/50 p-2 text-muted-foreground hover:text-foreground" title="Tilt down">
               <ArrowDown className="h-4 w-4" />
             </button>
             <span className="text-xs text-muted-foreground px-2">Yaw: {yaw}° Pitch: {pitch}°</span>
 
-            <button onClick={applyLookAt}
+            <button onClick={() => doCamera((d, y, p) => [5, 0, 15])}
               className="ml-auto rounded-lg border border-border/50 bg-card/50 px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
               <RotateCw className="h-3.5 w-3.5 inline mr-1" />Reset view
             </button>

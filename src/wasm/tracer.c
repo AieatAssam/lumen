@@ -275,11 +275,12 @@ static void setup_checkerboard(void) {
     int sun   = add_material(v3(1,1,1), v3(20,18,15), 0, 1, MAT_EMISSIVE);
     int sky   = add_material(v3(0.6,0.7,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* ceiling */
 
-    /* Checkerboard floor — use small spheres for each tile */
+    /* Checkerboard floor — overlapping spheres for a smooth surface */
     for (int ix = -5; ix <= 5; ix++) {
-        for (int iz = -5; iz <= 5; iz++) {
+        for (int iz = -4; iz <= 4; iz++) {
             int mat = ((ix + iz) & 1) ? white : black;
-            add_sphere(v3((float)ix * 1.5f, -0.05f, (float)iz * 1.5f - 2.0f), 0.75f, mat);
+            /* Radius (0.95) overlaps spacing (1.5) for a continuous floor */
+            add_sphere(v3((float)ix * 1.5f, -0.70f, (float)iz * 1.5f - 2.0f), 0.95f, mat);
         }
     }
 
@@ -310,13 +311,14 @@ static void setup_checkerboard(void) {
 
 /* ── Scene 5: Cosmic (abstract floating orbs) ── */
 static void setup_cosmic(void) {
-    int bg = add_material(v3(0.02,0.02,0.05), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* dark background */
-    int orb1 = add_material(v3(0.1,0.5,0.9), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
-    int orb2 = add_material(v3(0.9,0.3,0.5), v3(0,0,0), 0, 1.4f, MAT_DIELECTRIC);
-    int orb3 = add_material(v3(0.3,0.9,0.3), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
-    int light1 = add_material(v3(1,1,1), v3(6,5,10), 0, 1, MAT_EMISSIVE);
-    int light2 = add_material(v3(1,0.9,0.7), v3(8,7,3), 0, 1, MAT_EMISSIVE);
-    int light3 = add_material(v3(0.7,0.7,1), v3(4,5,8), 0, 1, MAT_EMISSIVE);
+    int bg = add_material(v3(0.04,0.04,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* deep space blue */
+    int orb1 = add_material(v3(0.2,0.6,1.0), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
+    int orb2 = add_material(v3(1.0,0.3,0.5), v3(0,0,0), 0, 1.4f, MAT_DIELECTRIC);
+    int orb3 = add_material(v3(0.3,1.0,0.3), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
+    int orb4 = add_material(v3(0.9,0.7,0.2), v3(0,0,0), 0, 1.2f, MAT_DIELECTRIC);
+    int light1 = add_material(v3(1,0.85,0.6), v3(20,16,8), 0, 1, MAT_EMISSIVE);
+    int light2 = add_material(v3(0.6,0.85,1), v3(8,12,25), 0, 1, MAT_EMISSIVE);
+    int light3 = add_material(v3(0.9,0.6,1), v3(15,8,18), 0, 1, MAT_EMISSIVE);
     int mirror = add_material(v3(1,1,1), v3(0,0,0), 0.0f, 1, MAT_METAL);
 
     /* Large dark enclosing sphere */
@@ -327,11 +329,12 @@ static void setup_cosmic(void) {
     add_sphere(v3(1.8f, 0.2f, -1.8f), 0.9f, orb2);
     add_sphere(v3(0.3f, -0.2f, -3.0f), 0.7f, orb3);
     add_sphere(v3(-2.5f, 0.3f, -3.5f), 0.5f, mirror);
+    add_sphere(v3(2.0f, -0.3f, -2.8f), 0.6f, orb4);
 
-    /* Colored lights */
-    add_sphere(v3(2.5f, 2.0f, -1.0f), 0.3f, light1);
-    add_sphere(v3(-2.0f, 1.5f, -2.5f), 0.25f, light2);
-    add_sphere(v3(1.0f, -1.5f, -1.5f), 0.2f, light3);
+    /* Colored lights — much brighter, larger */
+    add_sphere(v3(2.5f, 2.0f, -1.0f), 0.5f, light1);
+    add_sphere(v3(-2.0f, 1.5f, -2.5f), 0.45f, light2);
+    add_sphere(v3(1.0f, -1.5f, -1.5f), 0.4f, light3);
 
     g_camera.eye = v3(0, 0.1f, 3.0f);
     g_camera.lookat = v3(0, 0.2f, -2.0f);
