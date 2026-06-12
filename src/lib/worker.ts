@@ -1,12 +1,9 @@
 /*
  * Lumen Web Worker — loads the WASM path tracer and handles rendering.
- *
- * The WASM module (tracer.js) lives in /public and is loaded via
- * dynamic import at runtime, not bundled by Vite.
  */
 
 type WorkerMessage =
-  | { type: 'init'; width: number; height: number; sceneId: number }
+  | { type: 'init'; width: number; height: number; sceneId: number; baseUrl: string }
   | { type: 'render'; samples: number }
   | { type: 'setCamera'; eye: [number,number,number]; look: [number,number,number] }
   | { type: 'destroy' };
@@ -18,9 +15,9 @@ let height = 0;
 let running = false;
 let pendingRender = false;
 
-async function loadWasm(): Promise<void> {
-  // Dynamic import from /public — Vite leaves this alone
-  const mod = await import(/* @vite-ignore */ '/tracer.js');
+async function loadWasm(baseUrl: string): Promise<void> {
+  const url = baseUrl + 'tracer.js';
+  const mod = await import(/* @vite-ignore */ url);
   wasm = await mod.default();
 }
 
@@ -30,9 +27,10 @@ function postPixels() {
   const raw = new Uint8ClampedArray(wasm.HEAPU8.buffer, pixelsPtr, size);
   const copy = new Uint8ClampedArray(size);
   copy.set(raw);
-  self.postMessage(
-    { type: 'pixels', data: copy, width, height, samples: wasm._get_total_samples() },
-  );
+  self.postMessage({
+    type: 'pixels', data: copy, width, height,
+    samples: wasm._get_total_samples(),
+  });
 }
 
 async function doRender(samples: number) {
@@ -41,29 +39,22 @@ async function doRender(samples: number) {
   wasm._render(samples);
   postPixels();
   running = false;
-  if (pendingRender) {
-    pendingRender = false;
-    doRender(1);
-  }
+  if (pendingRender) { pendingRender = false; doRender(1); }
 }
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   const msg = e.data;
-
   switch (msg.type) {
     case 'init':
-      if (!wasm) await loadWasm();
-      width = msg.width;
-      height = msg.height;
+      if (!wasm) await loadWasm(msg.baseUrl);
+      width = msg.width; height = msg.height;
       wasm._init(width, height, msg.sceneId);
       pixelsPtr = wasm._get_pixels();
       break;
-
     case 'render':
       if (running) { pendingRender = true; }
       else doRender(msg.samples);
       break;
-
     case 'setCamera':
       if (!wasm) return;
       wasm._setCamera(
@@ -72,7 +63,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       );
       pixelsPtr = wasm._get_pixels();
       break;
-
     case 'destroy':
       if (wasm) { wasm._destroy(); wasm = null; }
       break;

@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# Lumen — WASM Path Tracer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Physically-based path tracing running entirely in your browser via WebAssembly. No GPU required.
 
-Currently, two official plugins are available:
+[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-blue)](https://aieatassam.github.io/lumen/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Lumen Screenshot](screenshot.png)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Real-time progressive path tracing** — watch the image converge sample by sample
+- **Three physically-based scenes**:
+  - **Cornell Box** — Classic test scene with color-bleeding walls, metal sphere, and glass sphere
+  - **Metal Spheres** — Diffuse and specular spheres with roughness under sunlight
+  - **Glass & Light** — Dielectric glass spheres with Fresnel refraction and caustics
+- **Full BRDF support** — Lambertian diffuse, metallic specular (with roughness), dielectric refraction (with Schlick Fresnel)
+- **Russian roulette** path termination for efficient rendering
+- **Reinhard tone mapping** with gamma correction
+- **WebAssembly core** — hand-written C ray tracer compiled via Emscripten
+- **Zero dependencies at runtime** — renders directly to Canvas2D
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Layer | Technology |
+|-------|-----------|
+| Ray tracer core | C (550 lines) |
+| WASM compiler | Emscripten 6.0 |
+| Build tool | Vite |
+| UI framework | React 18 + TypeScript |
+| Styling | Tailwind CSS 4 |
+| Deployment | GitHub Pages |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## How It Works
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. A C-based path tracer (`src/wasm/tracer.c`) implements ray-sphere intersection, BSDF sampling, and Monte Carlo integration
+2. Emscripten compiles it to `tracer.wasm` (25KB) + JS glue code
+3. A classic Web Worker loads the WASM module via `importScripts`
+4. The React UI sends render commands to the worker; progressive frames are drawn to a Canvas2D element
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The dev server runs on `http://localhost:5173/lumen/`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Project Structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+lumen/
+├── public/
+│   ├── worker.js        # Web Worker (classic) — loads WASM, handles rendering
+│   ├── tracer.js        # Emscripten glue code
+│   └── tracer.wasm      # Compiled WASM binary
+├── src/
+│   ├── wasm/
+│   │   └── tracer.c     # C path tracer source
+│   ├── components/      # React UI components
+│   ├── App.tsx          # Main app component
+│   └── main.tsx         # Entry point
+├── index.html
+├── vite.config.ts
+└── package.json
+```
+
+## Building the WASM Core
+
+Requires [Emscripten](https://emscripten.org/) installed:
+
+```bash
+emcc src/wasm/tracer.c -O3 \
+  -s WASM=1 \
+  -s EXPORTED_FUNCTIONS='["_init","_render","_get_pixels","_set_camera","_destroy","_get_total_samples","_malloc","_free"]' \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -o public/tracer.js
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.

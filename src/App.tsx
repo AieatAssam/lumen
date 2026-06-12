@@ -21,6 +21,7 @@ export default function App() {
   const [raysPerSec, setRaysPerSec] = useState(0);
   const [renderTime, setRenderTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [wasmReady, setWasmReady] = useState(false);
 
   const workerRef = useRef<Worker | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -28,26 +29,22 @@ export default function App() {
   const samplesRef = useRef(0);
   const startTimeRef = useRef(0);
   const pendingFrameRef = useRef<ImageData | null>(null);
+  const renderingRef = useRef(false);
+  const sceneIdRef = useRef(0);
 
   const currentScene = SCENES[sceneId];
 
-  // Initialize worker
-  const initWorker = useCallback((id: number) => {
-    workerRef.current?.terminate();
-    setSamples(0);
-    samplesRef.current = 0;
-    setRaysPerSec(0);
-    setRenderTime(0);
-    setError(null);
-
-    const worker = new Worker(
-      new URL('./lib/worker.ts', import.meta.url),
-      { type: 'module' }
-    );
+  // Create worker once on mount
+  useEffect(() => {
+    const baseUrl = import.meta.env.BASE_URL;
+    const worker = new Worker(baseUrl + 'worker.js');
 
     worker.onmessage = (e) => {
       const msg = e.data;
       switch (msg.type) {
+        case 'log':
+          console.log('[WASM]', msg.message);
+          break;
         case 'pixels': {
           const { data, width, height, samples: s } = msg;
           const img = new ImageData(data, width, height);
@@ -62,7 +59,20 @@ export default function App() {
           }
           break;
         }
-        case 'progress':
+        case 'error':
+          setError(msg.message);
+          setRendering(false);
+          renderingRef.current = false;
+          break;
+        case 'ready':
+          setWasmReady(true);
+          // Init the current scene once WASM is ready
+          worker.postMessage({
+            type: 'init',
+            width: CANVAS_W, height: CANVAS_H,
+            sceneId: sceneIdRef.current,
+            baseUrl,
+          });
           break;
       }
     };
@@ -70,15 +80,45 @@ export default function App() {
     worker.onerror = (e) => {
       setError(e.message || 'Worker error');
       setRendering(false);
+      renderingRef.current = false;
     };
 
-    worker.postMessage({ type: 'init', width: CANVAS_W, height: CANVAS_H, sceneId: id });
     workerRef.current = worker;
-  }, []);
 
-  // Render animation loop — draws pending frames to canvas
+    return () => {
+      worker.terminate();
+      workerRef.current = null;
+    };
+  }, []); // Only on mount/unmount
+
+  // Handle scene changes: send new init to existing worker
   useEffect(() => {
+    sceneIdRef.current = sceneId;
+    const worker = workerRef.current;
+    if (!worker) return;
+
+    const baseUrl = import.meta.env.BASE_URL;
+    setSamples(0);
+    samplesRef.current = 0;
+    setRaysPerSec(0);
+    setRenderTime(0);
+    setError(null);
+    setRendering(false);
+    renderingRef.current = false;
+
+    worker.postMessage({
+      type: 'init',
+      width: CANVAS_W, height: CANVAS_H,
+      sceneId,
+      baseUrl,
+    });
+  }, [sceneId]);
+
+  // Animation loop: draw pending frames to canvas
+  useEffect(() => {
+    let running = true;
     const render = () => {
+      if (!running) return;
       rafRef.current = requestAnimationFrame(render);
       const canvas = canvasRef.current;
       const pending = pendingFrameRef.current;
@@ -93,39 +133,42 @@ export default function App() {
       pendingFrameRef.current = null;
     };
     rafRef.current = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      running = false;
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
-  // Initialize on mount and scene change
-  useEffect(() => {
-    initWorker(sceneId);
-    return () => workerRef.current?.terminate();
-  }, [sceneId, initWorker]);
-
   const handleStart = useCallback(() => {
-    if (!workerRef.current) return;
+    const worker = workerRef.current;
+    if (!worker) return;
     setRendering(true);
+    renderingRef.current = true;
     startTimeRef.current = performance.now();
     setRenderTime(0);
     setRaysPerSec(0);
 
     const pump = () => {
-      if (!workerRef.current) return;
-      // Ask worker to render 1 sample per pixel per pump
-      workerRef.current.postMessage({ type: 'render', samples: 1 });
-      // Queue next pump
-      setTimeout(pump, 0);
+      if (!renderingRef.current) return;
+      const w = workerRef.current;
+      if (!w) return;
+      w.postMessage({ type: 'render', samples: 1 });
+
+      // Use rAF-aligned timing for smoother pump with backpressure
+      requestAnimationFrame(() => {
+        if (renderingRef.current) pump();
+      });
     };
     pump();
   }, []);
 
   const handlePause = useCallback(() => {
     setRendering(false);
+    renderingRef.current = false;
   }, []);
 
   const handleSceneChange = useCallback((id: number) => {
     setSceneId(id);
-    setRendering(false);
   }, []);
 
   return (
@@ -143,7 +186,7 @@ export default function App() {
             </div>
           </div>
           <a
-            href="https://github.com"
+            href="https://github.com/AieatAssam/lumen"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 rounded-lg border border-border/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
@@ -168,6 +211,13 @@ export default function App() {
         {error && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
+          </div>
+        )}
+
+        {/* Loading indicator */}
+        {!wasmReady && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary/80">
+            Loading WASM engine…
           </div>
         )}
 
