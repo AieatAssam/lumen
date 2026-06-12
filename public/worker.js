@@ -108,6 +108,11 @@ self.onmessage = function(e) {
         );
         pixelsPtr = Module._get_pixels();
         break;
+      case 'lookAt':
+        if (!wasmReady) return;
+        Module._look_at(msg.distance, msg.yaw, msg.pitch);
+        pixelsPtr = Module._get_pixels();
+        break;
       case 'destroy':
         if (wasmReady) { Module._destroy(); wasmReady = false; }
         break;
