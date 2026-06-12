@@ -41,6 +41,7 @@ export default function App() {
 
     worker.onmessage = (e) => {
       const msg = e.data;
+      console.log('[WASM] msg:', msg.type, msg.message || '');
       switch (msg.type) {
         case 'log':
           console.log('[WASM]', msg.message);
