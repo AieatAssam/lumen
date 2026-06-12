@@ -147,122 +147,165 @@ static void add_sphere(Vec3 center, float radius, int mat_id) {
 
 /* ── Scene 0: Cornell Box ── */
 static void setup_cornell_box(void) {
-    int white = add_material(v3(0.9,0.9,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int red   = add_material(v3(0.65,0.05,0.05), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int green = add_material(v3(0.12,0.45,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int white = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int red   = add_material(v3(0.75,0.08,0.08), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int green = add_material(v3(0.08,0.55,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int floor_gray = add_material(v3(0.4,0.4,0.45), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int floor_dark = add_material(v3(0.15,0.15,0.18), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int light = add_material(v3(1,1,1), v3(40,40,40), 0, 1, MAT_EMISSIVE);
-    int metal = add_material(v3(0.9,0.85,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
-    int glass = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
+    int metal = add_material(v3(0.92,0.88,0.82), v3(0,0,0), 0.05f, 1, MAT_METAL);
+    int glass = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
 
-    add_sphere(v3(1.0f, 1.95f, -0.5f), 0.15f, light);
+    add_sphere(v3(1.0f, 1.95f, -0.5f), 0.18f, light);
 
     float R = 50.0f;
     add_sphere(v3(0, -R-1, 0), R, white);    /* floor */
     add_sphere(v3(0, 0, -R-2), R, white);    /* back wall */
     add_sphere(v3(-R-2, 0, 0), R, red);      /* left wall */
     add_sphere(v3(R+2, 0, 0), R, green);     /* right wall */
+    add_sphere(v3(0, R+2, 0), R, white);     /* ceiling */
+
+    /* Checkerboard accent on floor */
+    for (int ix = -1; ix <= 1; ix++) {
+        for (int iz = 0; iz <= 2; iz++) {
+            int mat = ((ix + iz) & 1) ? floor_gray : floor_dark;
+            add_sphere(v3((float)ix * 0.8f, 0.01f, (float)iz * 0.8f - 0.6f), 0.42f, mat);
+        }
+    }
 
     add_sphere(v3(1.35f, 0.3f, -0.8f), 0.7f, metal);
     add_sphere(v3(-0.4f, 0.2f, -1.0f), 0.6f, glass);
 
-    g_camera.eye = v3(0, 1.2f, 3.5f);
-    g_camera.lookat = v3(0, 0.6f, -0.5f);
-    g_camera.up = v3(0, 1, 0);
-    g_camera.fov = 45.0f;
-    g_camera.aperture = 0.0f;
-    g_camera.focus_dist = 3.5f;
-}
-
-/* ── Scene 1: Metal Spheres ── */
-static void setup_metal_spheres(void) {
-    int ground = add_material(v3(0.5,0.5,0.5), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int center = add_material(v3(0.7,0.3,0.3), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int left   = add_material(v3(0.8,0.8,0.8), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int right  = add_material(v3(0.8,0.6,0.2), v3(0,0,0), 0.3f, 1, MAT_METAL);
-    int sun    = add_material(v3(1,1,1), v3(24,21,15), 0, 1, MAT_EMISSIVE);
-
-    add_sphere(v3(0, -1000.5f, -1), 1000, ground);
-    add_sphere(v3(0, 0.5f, -1), 1.0f, center);
-    add_sphere(v3(-2.5f, 0.5f, -1.5f), 1.0f, left);
-    add_sphere(v3(2.5f, 0.5f, -1.5f), 1.0f, right);
-    add_sphere(v3(3, 5, 2), 1.5f, sun);
-
-    g_camera.eye = v3(0, 1.5f, 4);
-    g_camera.lookat = v3(0, 0.5f, -1);
+    g_camera.eye = v3(0, 1.3f, 4.0f);
+    g_camera.lookat = v3(0, 0.5f, -0.5f);
     g_camera.up = v3(0, 1, 0);
     g_camera.fov = 50.0f;
     g_camera.aperture = 0.0f;
     g_camera.focus_dist = 4.0f;
 }
 
+/* ── Scene 1: Metal Spheres ── */
+static void setup_metal_spheres(void) {
+    int ground   = add_material(v3(0.25,0.28,0.35), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int ground2  = add_material(v3(0.55,0.52,0.45), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int center   = add_material(v3(0.8,0.25,0.25), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int left     = add_material(v3(0.85,0.85,0.85), v3(0,0,0), 0.01f, 1, MAT_METAL);
+    int right    = add_material(v3(0.85,0.65,0.2), v3(0,0,0), 0.2f, 1, MAT_METAL);
+    int chrome   = add_material(v3(0.95,0.93,0.9), v3(0,0,0), 0.0f, 1, MAT_METAL);
+    int glass    = add_material(v3(0.95,0.95,0.95), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
+    int sun      = add_material(v3(1,1,1), v3(24,21,15), 0, 1, MAT_EMISSIVE);
+    int bluelight = add_material(v3(0.3,0.5,1), v3(12,14,22), 0, 1, MAT_EMISSIVE);
+
+    /* Gradient ground — checker of two grays */
+    for (int ix = -3; ix <= 3; ix++) {
+        for (int iz = -3; iz <= 3; iz++) {
+            int mat = ((ix + iz) & 1) ? ground : ground2;
+            add_sphere(v3((float)ix * 2.0f, -0.01f, (float)iz * 2.0f - 1.0f), 1.05f, mat);
+        }
+    }
+
+    add_sphere(v3(0, 0.8f, -1), 1.2f, center);
+    add_sphere(v3(-3.0f, 0.6f, -1.8f), 1.0f, left);
+    add_sphere(v3(3.0f, 0.5f, -1.5f), 1.0f, right);
+    add_sphere(v3(-1.5f, 0.4f, -2.5f), 0.55f, chrome);
+    add_sphere(v3(1.8f, 0.35f, 0.2f), 0.4f, glass);
+    add_sphere(v3(3, 5, 2), 2.0f, sun);
+    add_sphere(v3(-4, 3, -2), 1.0f, bluelight);
+
+    g_camera.eye = v3(0, 1.6f, 4.5f);
+    g_camera.lookat = v3(0, 0.5f, -1);
+    g_camera.up = v3(0, 1, 0);
+    g_camera.fov = 55.0f;
+    g_camera.aperture = 0.0f;
+    g_camera.focus_dist = 4.5f;
+}
+
 /* ── Scene 2: Glass & Light ── */
 static void setup_glass_light(void) {
-    int ground = add_material(v3(0.2,0.2,0.25), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int glass1 = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int glass2 = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int metal  = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int light  = add_material(v3(1,1,1), v3(36,30,24), 0, 1, MAT_EMISSIVE);
-    int red    = add_material(v3(0.85,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int ground = add_material(v3(0.18,0.18,0.22), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int ground2= add_material(v3(0.35,0.35,0.40), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int glass1 = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
+    int glass2 = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
+    int metal  = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.01f, 1, MAT_METAL);
+    int light  = add_material(v3(1,1,0.95), v3(36,30,24), 0, 1, MAT_EMISSIVE);
+    int red    = add_material(v3(0.9,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int blue   = add_material(v3(0.15,0.2,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int gold   = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.05f, 1, MAT_METAL);
 
-    add_sphere(v3(0, -1000.5f, -1), 1000, ground);
-    add_sphere(v3(-1.5f, 0.6f, -1.5f), 1.0f, glass1);
-    add_sphere(v3(1.5f, 0.4f, -1.0f), 0.7f, glass2);
-    add_sphere(v3(0, 0.8f, -2.5f), 0.8f, metal);
-    add_sphere(v3(-0.5f, 0.3f, -0.2f), 0.35f, red);
-    add_sphere(v3(2, 4, 1), 1.0f, light);
+    /* Checker ground */
+    for (int ix = -3; ix <= 3; ix++) {
+        for (int iz = -3; iz <= 3; iz++) {
+            int mat = ((ix + iz) & 1) ? ground : ground2;
+            add_sphere(v3((float)ix * 1.5f, -0.01f, (float)iz * 1.5f - 1.0f), 0.8f, mat);
+        }
+    }
 
-    g_camera.eye = v3(0, 1.3f, 3.5f);
+    add_sphere(v3(-1.8f, 0.7f, -1.5f), 1.0f, glass1);
+    add_sphere(v3(1.8f, 0.4f, -1.0f), 0.7f, glass2);
+    add_sphere(v3(0, 0.9f, -2.8f), 0.9f, metal);
+    add_sphere(v3(-0.6f, 0.35f, -0.1f), 0.4f, red);
+    add_sphere(v3(1.6f, 0.3f, -2.5f), 0.35f, blue);
+    add_sphere(v3(-2.5f, 0.5f, -2.0f), 0.3f, gold);
+    add_sphere(v3(2, 5, 1), 1.5f, light);
+
+    g_camera.eye = v3(0, 1.5f, 4.0f);
     g_camera.lookat = v3(0, 0.5f, -1.2f);
     g_camera.up = v3(0, 1, 0);
     g_camera.fov = 55.0f;
     g_camera.aperture = 0.0f;
-    g_camera.focus_dist = 3.5f;
+    g_camera.focus_dist = 4.0f;
 }
 
 /* ── Scene 3: Random Spheres (procedural) ── */
 static void setup_random_spheres(void) {
     int colors[6];
-    colors[0] = add_material(v3(0.9,0.2,0.2), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* red */
-    colors[1] = add_material(v3(0.2,0.9,0.2), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* green */
-    colors[2] = add_material(v3(0.2,0.2,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* blue */
-    colors[3] = add_material(v3(0.9,0.9,0.2), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* yellow */
-    colors[4] = add_material(v3(0.9,0.5,0.1), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* orange */
-    colors[5] = add_material(v3(0.7,0.2,0.7), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* purple */
-    int metal = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.05f, 1, MAT_METAL);
-    int glass = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int ground = add_material(v3(0.3,0.3,0.35), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    colors[0] = add_material(v3(0.95,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* red */
+    colors[1] = add_material(v3(0.15,0.95,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* green */
+    colors[2] = add_material(v3(0.15,0.15,0.95), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* blue */
+    colors[3] = add_material(v3(0.95,0.95,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* yellow */
+    colors[4] = add_material(v3(0.95,0.5,0.1), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);   /* orange */
+    colors[5] = add_material(v3(0.75,0.15,0.75), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* purple */
+    int metal = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.03f, 1, MAT_METAL);
+    int glass = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
+    int ground_a = add_material(v3(0.25,0.25,0.30), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int ground_b = add_material(v3(0.45,0.45,0.48), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int sun = add_material(v3(1,0.95,0.8), v3(30,27,21), 0, 1, MAT_EMISSIVE);
 
-    /* Ground plane */
-    add_sphere(v3(0, -1000.5f, 0), 1000, ground);
+    /* Checker ground */
+    for (int ix = -4; ix <= 4; ix++) {
+        for (int iz = -4; iz <= 4; iz++) {
+            int mat = ((ix + iz) & 1) ? ground_a : ground_b;
+            add_sphere(v3((float)ix * 1.5f, -0.01f, (float)iz * 1.5f - 0.5f), 0.8f, mat);
+        }
+    }
 
     /* Random field of spheres */
     unsigned int rng = 42;
-    for (int i = 0; i < 40; i++) {
-        float x = (randf(&rng) - 0.5f) * 6.0f;
-        float z = (randf(&rng) - 0.5f) * 6.0f - 1.0f;
-        float r = 0.15f + randf(&rng) * 0.35f;
-        float y = r;  /* sit on ground */
+    for (int i = 0; i < 50; i++) {
+        float x = (randf(&rng) - 0.5f) * 8.0f;
+        float z = (randf(&rng) - 0.5f) * 7.0f - 1.0f;
+        float r = 0.12f + randf(&rng) * 0.40f;
+        float y = r;
         int mat;
         float choice = randf(&rng);
-        if (choice < 0.15f) mat = metal;
-        else if (choice < 0.25f) mat = glass;
+        if (choice < 0.12f) mat = metal;
+        else if (choice < 0.22f) mat = glass;
         else mat = colors[(int)(randf(&rng) * 6)];
         add_sphere(v3(x, y, z), r, mat);
     }
 
-    /* Large center sphere */
-    add_sphere(v3(0, 0.8f, -1.5f), 0.8f, glass);
+    /* Large center glass sphere */
+    add_sphere(v3(0, 0.9f, -1.8f), 0.9f, glass);
 
     /* Sun above */
-    add_sphere(v3(0, 6, 3), 1.5f, sun);
+    add_sphere(v3(0, 7, 4), 1.5f, sun);
 
-    g_camera.eye = v3(0, 2.0f, 4.5f);
+    g_camera.eye = v3(0, 2.2f, 5.0f);
     g_camera.lookat = v3(0, 0.5f, -0.5f);
     g_camera.up = v3(0, 1, 0);
     g_camera.fov = 60.0f;
     g_camera.aperture = 0.0f;
-    g_camera.focus_dist = 4.0f;
+    g_camera.focus_dist = 5.0f;
 }
 
 /* ── Scene 4: Checkerboard floor with columns ── */
@@ -311,32 +354,40 @@ static void setup_checkerboard(void) {
 
 /* ── Scene 5: Cosmic (abstract floating orbs) ── */
 static void setup_cosmic(void) {
-    int bg = add_material(v3(0.04,0.04,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* deep space blue */
+    int bg = add_material(v3(0.02,0.02,0.06), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* deep space */
     int orb1 = add_material(v3(0.2,0.6,1.0), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
     int orb2 = add_material(v3(1.0,0.3,0.5), v3(0,0,0), 0, 1.4f, MAT_DIELECTRIC);
     int orb3 = add_material(v3(0.3,1.0,0.3), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
     int orb4 = add_material(v3(0.9,0.7,0.2), v3(0,0,0), 0, 1.2f, MAT_DIELECTRIC);
+    int orb5 = add_material(v3(0.7,0.3,0.9), v3(0,0,0), 0, 1.35f, MAT_DIELECTRIC);
     int light1 = add_material(v3(1,0.85,0.6), v3(60,48,24), 0, 1, MAT_EMISSIVE);
     int light2 = add_material(v3(0.6,0.85,1), v3(24,36,75), 0, 1, MAT_EMISSIVE);
     int light3 = add_material(v3(0.9,0.6,1), v3(45,24,54), 0, 1, MAT_EMISSIVE);
+    int light4 = add_material(v3(0.7,1.0,0.7), v3(20,30,18), 0, 1, MAT_EMISSIVE);
     int mirror = add_material(v3(1,1,1), v3(0,0,0), 0.0f, 1, MAT_METAL);
+    int ground = add_material(v3(0.08,0.08,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
 
     /* Large dark enclosing sphere */
     add_sphere(v3(0, 0, 0), 20.0f, bg);
 
+    /* Ground disc */
+    add_sphere(v3(0, -3.0f, -1.0f), 5.0f, ground);
+
     /* Floating orbs */
-    add_sphere(v3(-1.5f, 0.5f, -2.0f), 1.2f, orb1);
-    add_sphere(v3(1.8f, 0.2f, -1.8f), 0.9f, orb2);
-    add_sphere(v3(0.3f, -0.2f, -3.0f), 0.7f, orb3);
-    add_sphere(v3(-2.5f, 0.3f, -3.5f), 0.5f, mirror);
-    add_sphere(v3(2.0f, -0.3f, -2.8f), 0.6f, orb4);
+    add_sphere(v3(-1.5f, 0.8f, -2.0f), 1.2f, orb1);
+    add_sphere(v3(1.8f, 0.3f, -1.8f), 0.9f, orb2);
+    add_sphere(v3(0.3f, -0.1f, -3.0f), 0.7f, orb3);
+    add_sphere(v3(-2.5f, 0.5f, -3.5f), 0.5f, mirror);
+    add_sphere(v3(2.0f, -0.2f, -2.8f), 0.6f, orb4);
+    add_sphere(v3(-0.8f, -0.4f, -1.5f), 0.4f, orb5);
 
-    /* Colored lights — much brighter, larger */
-    add_sphere(v3(2.5f, 2.0f, -1.0f), 0.5f, light1);
-    add_sphere(v3(-2.0f, 1.5f, -2.5f), 0.45f, light2);
-    add_sphere(v3(1.0f, -1.5f, -1.5f), 0.4f, light3);
+    /* Colored lights — larger and brighter */
+    add_sphere(v3(2.5f, 2.0f, -1.0f), 0.6f, light1);
+    add_sphere(v3(-2.0f, 1.5f, -2.5f), 0.55f, light2);
+    add_sphere(v3(1.0f, -1.5f, -1.5f), 0.5f, light3);
+    add_sphere(v3(-1.5f, -0.5f, -1.0f), 0.35f, light4);
 
-    g_camera.eye = v3(0, 0.1f, 3.0f);
+    g_camera.eye = v3(0, 0.3f, 3.2f);
     g_camera.lookat = v3(0, 0.2f, -2.0f);
     g_camera.up = v3(0, 1, 0);
     g_camera.fov = 65.0f;
@@ -376,11 +427,39 @@ static int intersect(Ray *ray, Hit *hit) {
     return hit->t < INF;
 }
 
-/* ── Sky ── */
+/* ── Sky with sun disk and atmospheric gradient ── */
 static Vec3 sky_color(Ray *ray) {
     Vec3 unit = v3_norm(ray->dir);
     float t = 0.5f * (unit.y + 1.0f);
-    return v3_lerp(v3(1,1,1), v3(0.5,0.7,1.0), t);
+
+    /* Atmospheric gradient: white overhead → blue at horizon → warm at ground */
+    Vec3 horizon = v3(0.62f, 0.78f, 1.0f);
+    Vec3 zenith  = v3(0.25f, 0.45f, 0.85f);
+    Vec3 ground  = v3(0.95f, 0.85f, 0.70f);
+    Vec3 sky;
+    if (t > 0.5f) {
+        sky = v3_lerp(horizon, zenith, (t - 0.5f) * 2.0f);
+    } else {
+        sky = v3_lerp(ground, horizon, t * 2.0f);
+    }
+
+    /* Sun disk */
+    Vec3 sun_dir = v3_norm(v3(0.55f, 0.65f, 0.52f));
+    float sun_dot = v3_dot(unit, sun_dir);
+    if (sun_dot > 0.999f) {
+        float s = (sun_dot - 0.999f) / 0.001f;  /* sharp falloff */
+        Vec3 sun_glow = v3(12.0f, 10.0f, 7.0f);
+        sky = v3_lerp(sky, sun_glow, s * s);
+    }
+
+    /* Wide glow around sun */
+    if (sun_dot > 0.94f) {
+        float g = (sun_dot - 0.94f) / 0.06f;
+        Vec3 glow = v3(1.5f, 1.3f, 0.9f);
+        sky = v3_lerp(sky, glow, g * g * 0.6f);
+    }
+
+    return sky;
 }
 
 /* ── Cosine-weighted hemisphere sampling ── */
