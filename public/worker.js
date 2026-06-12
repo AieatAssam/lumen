@@ -47,6 +47,13 @@ self.Module = {
   },
   onRuntimeInitialized: function() {
     wasmReady = true;
+    // Process any pending init
+    var m = self._pendingInit;
+    if (m) {
+      Module._init(m.width, m.height, m.sceneId);
+      pixelsPtr = Module._get_pixels();
+      self._pendingInit = null;
+    }
     self.postMessage({ type: 'ready' });
   },
   print: function(text) { self.postMessage({ type: 'log', message: text }); },
@@ -68,7 +75,7 @@ self.onmessage = function(e) {
           Module._init(msg.width, msg.height, msg.sceneId);
           pixelsPtr = Module._get_pixels();
         } else {
-          // Defer until WASM is ready
+          // Defer until WASM is ready; load WASM now
           self._pendingInit = msg;
           try {
             self.importScripts(baseUrl + 'tracer.js');

@@ -66,13 +66,6 @@ export default function App() {
           break;
         case 'ready':
           setWasmReady(true);
-          // Init the current scene once WASM is ready
-          worker.postMessage({
-            type: 'init',
-            width: CANVAS_W, height: CANVAS_H,
-            sceneId: sceneIdRef.current,
-            baseUrl,
-          });
           break;
       }
     };
@@ -84,6 +77,14 @@ export default function App() {
     };
 
     workerRef.current = worker;
+
+    // Send init immediately — worker loads WASM on receipt
+    worker.postMessage({
+      type: 'init',
+      width: CANVAS_W, height: CANVAS_H,
+      sceneId: sceneIdRef.current,
+      baseUrl,
+    });
 
     return () => {
       worker.terminate();
