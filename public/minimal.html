@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Minimal Test</title></head>
+<body>
+<h2>Minimal Worker Test</h2>
+<pre id="out"></pre>
+<script>
+var out = document.getElementById('out');
+function log(s) { out.textContent += s + '\n'; console.log(s); }
+
+log('Creating worker...');
+var w = new Worker('worker.js');
+w.onmessage = function(e) {
+  log('MSG: ' + e.data.type + (e.data.message ? ': ' + e.data.message : ''));
+  if (e.data.type === 'ready') {
+    log('Sending init...');
+    w.postMessage({type:'init', width:64, height:36, sceneId:0, baseUrl:'/lumen/'});
+    w.postMessage({type:'render', samples:1});
+  }
+  if (e.data.type === 'pixels') {
+    log('PIXELS: ' + e.data.data.length + ' bytes');
+    var img = new ImageData(e.data.data, e.data.width, e.data.height);
+    log('ImageData OK: ' + img.width + 'x' + img.height);
+  }
+  if (e.data.type === 'error') {
+    log('ERROR: ' + e.data.message);
+  }
+};
+w.onerror = function(e) {
+  log('WORKER ERROR: ' + e.message);
+};
+log('Worker created, waiting...');
+</script>
+</body></html>
