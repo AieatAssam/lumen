@@ -267,12 +267,13 @@ static void setup_random_spheres(void) {
 
 /* ── Scene 4: Checkerboard floor with columns ── */
 static void setup_checkerboard(void) {
-    int white = add_material(v3(0.9,0.9,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int black = add_material(v3(0.1,0.1,0.1), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int white = add_material(v3(0.85,0.85,0.85), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int black = add_material(v3(0.15,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int red   = add_material(v3(0.8,0.15,0.15), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int blue  = add_material(v3(0.15,0.2,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
     int gold  = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int sun   = add_material(v3(1,1,1), v3(20,18,15), 0, 1, MAT_EMISSIVE);
+    int sun   = add_material(v3(1,1,1), v3(40,36,30), 0, 1, MAT_EMISSIVE);
+    int ambient = add_material(v3(0.9,0.9,1.0), v3(3,3,4), 0, 1, MAT_EMISSIVE);
 
     /* Checkerboard floor — overlapping spheres for a smooth surface */
     for (int ix = -7; ix <= 7; ix++) {
@@ -295,7 +296,10 @@ static void setup_checkerboard(void) {
     add_sphere(v3(-3.5f, 0.5f, -3.0f), 0.5f, blue);
 
     /* Sun */
-    add_sphere(v3(5, 8, 5), 1.0f, sun);
+    add_sphere(v3(5, 8, 5), 2.0f, sun);
+
+    /* Large ambient overhead light for soft fill */
+    add_sphere(v3(0, 10, 0), 8.0f, ambient);
 
     g_camera.eye = v3(0, 1.8f, 5.0f);
     g_camera.lookat = v3(0, 1.0f, -2.0f);

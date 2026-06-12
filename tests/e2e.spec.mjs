@@ -178,9 +178,17 @@ async function main() {
       const c = document.querySelector("canvas");
       if (!c) return null;
       const ctx = c.getContext("2d");
-      return Array.from(ctx.getImageData(320, 180, 1, 1).data);
+      // Sample several pixels across the checkerboard floor
+      let bright = 0;
+      for (let y = 100; y < 300; y += 40) {
+        for (let x = 100; x < 540; x += 40) {
+          const d = ctx.getImageData(x, y, 1, 1).data;
+          if (d[0] > 10 || d[1] > 10 || d[2] > 10) bright++;
+        }
+      }
+      return { sampled: 55, bright: bright };
     });
-    const hasColor = newPixels && (newPixels[0] > 0 || newPixels[1] > 0 || newPixels[2] > 0);
+    const hasColor = newPixels && newPixels.bright > 10;
     ok("checkerboard produces real pixels", hasColor, JSON.stringify(newPixels));
 
     // ── 10. Screenshot ──
