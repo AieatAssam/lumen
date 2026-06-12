@@ -150,7 +150,7 @@ static void setup_cornell_box(void) {
     int white = add_material(v3(0.9,0.9,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int red   = add_material(v3(0.65,0.05,0.05), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int green = add_material(v3(0.12,0.45,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int light = add_material(v3(1,1,1), v3(15,15,15), 0, 1, MAT_EMISSIVE);
+    int light = add_material(v3(1,1,1), v3(40,40,40), 0, 1, MAT_EMISSIVE);
     int metal = add_material(v3(0.9,0.85,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
     int glass = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
 
@@ -179,7 +179,7 @@ static void setup_metal_spheres(void) {
     int center = add_material(v3(0.7,0.3,0.3), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int left   = add_material(v3(0.8,0.8,0.8), v3(0,0,0), 0.02f, 1, MAT_METAL);
     int right  = add_material(v3(0.8,0.6,0.2), v3(0,0,0), 0.3f, 1, MAT_METAL);
-    int sun    = add_material(v3(1,1,1), v3(8,7,5), 0, 1, MAT_EMISSIVE);
+    int sun    = add_material(v3(1,1,1), v3(24,21,15), 0, 1, MAT_EMISSIVE);
 
     add_sphere(v3(0, -1000.5f, -1), 1000, ground);
     add_sphere(v3(0, 0.5f, -1), 1.0f, center);
@@ -201,7 +201,7 @@ static void setup_glass_light(void) {
     int glass1 = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int glass2 = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int metal  = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int light  = add_material(v3(1,1,1), v3(12,10,8), 0, 1, MAT_EMISSIVE);
+    int light  = add_material(v3(1,1,1), v3(36,30,24), 0, 1, MAT_EMISSIVE);
     int red    = add_material(v3(0.85,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
 
     add_sphere(v3(0, -1000.5f, -1), 1000, ground);
@@ -231,7 +231,7 @@ static void setup_random_spheres(void) {
     int metal = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int glass = add_material(v3(1,1,1), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int ground = add_material(v3(0.3,0.3,0.35), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int sun = add_material(v3(1,0.95,0.8), v3(10,9,7), 0, 1, MAT_EMISSIVE);
+    int sun = add_material(v3(1,0.95,0.8), v3(30,27,21), 0, 1, MAT_EMISSIVE);
 
     /* Ground plane */
     add_sphere(v3(0, -1000.5f, 0), 1000, ground);
@@ -272,8 +272,8 @@ static void setup_checkerboard(void) {
     int red   = add_material(v3(0.8,0.15,0.15), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int blue  = add_material(v3(0.15,0.2,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
     int gold  = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int sun   = add_material(v3(1,1,1), v3(40,36,30), 0, 1, MAT_EMISSIVE);
-    int ambient = add_material(v3(0.9,0.9,1.0), v3(3,3,4), 0, 1, MAT_EMISSIVE);
+    int sun   = add_material(v3(1,1,1), v3(80,72,60), 0, 1, MAT_EMISSIVE);
+    int ambient = add_material(v3(0.9,0.9,1.0), v3(9,9,12), 0, 1, MAT_EMISSIVE);
 
     /* Checkerboard floor — overlapping spheres for a smooth surface */
     for (int ix = -7; ix <= 7; ix++) {
@@ -316,9 +316,9 @@ static void setup_cosmic(void) {
     int orb2 = add_material(v3(1.0,0.3,0.5), v3(0,0,0), 0, 1.4f, MAT_DIELECTRIC);
     int orb3 = add_material(v3(0.3,1.0,0.3), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
     int orb4 = add_material(v3(0.9,0.7,0.2), v3(0,0,0), 0, 1.2f, MAT_DIELECTRIC);
-    int light1 = add_material(v3(1,0.85,0.6), v3(20,16,8), 0, 1, MAT_EMISSIVE);
-    int light2 = add_material(v3(0.6,0.85,1), v3(8,12,25), 0, 1, MAT_EMISSIVE);
-    int light3 = add_material(v3(0.9,0.6,1), v3(15,8,18), 0, 1, MAT_EMISSIVE);
+    int light1 = add_material(v3(1,0.85,0.6), v3(60,48,24), 0, 1, MAT_EMISSIVE);
+    int light2 = add_material(v3(0.6,0.85,1), v3(24,36,75), 0, 1, MAT_EMISSIVE);
+    int light3 = add_material(v3(0.9,0.6,1), v3(45,24,54), 0, 1, MAT_EMISSIVE);
     int mirror = add_material(v3(1,1,1), v3(0,0,0), 0.0f, 1, MAT_METAL);
 
     /* Large dark enclosing sphere */
@@ -411,6 +411,17 @@ static float schlick(float cosine, float ior) {
     float r0 = (1.0f - ior) / (1.0f + ior);
     r0 = r0 * r0;
     return r0 + (1.0f - r0) * powf(1.0f - cosine, 5.0f);
+}
+
+/* ── ACES Filmic Tone Mapping ── */
+static inline float aces_tonemap(float x) {
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    float v = (x * (a * x + b)) / (x * (c * x + d) + e);
+    return clampf(v, 0.0f, 1.0f);
 }
 
 /* ── Path tracing ── */
@@ -592,13 +603,13 @@ void render(int samples_per_pixel) {
             float g = g_accum[idx + 1];
             float b = g_accum[idx + 2];
 
-            r = r / (1.0f + r);
-            g = g / (1.0f + g);
-            b = b / (1.0f + b);
+            r = aces_tonemap(r);
+            g = aces_tonemap(g);
+            b = aces_tonemap(b);
 
-            r = powf(clampf(r, 0, 1), 1.0f/2.2f);
-            g = powf(clampf(g, 0, 1), 1.0f/2.2f);
-            b = powf(clampf(b, 0, 1), 1.0f/2.2f);
+            r = powf(r, 1.0f/2.2f);
+            g = powf(g, 1.0f/2.2f);
+            b = powf(b, 1.0f/2.2f);
 
             g_output[idx]     = (unsigned char)(r * 255);
             g_output[idx + 1] = (unsigned char)(g * 255);
