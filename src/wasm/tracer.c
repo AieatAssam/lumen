@@ -191,10 +191,10 @@ static void setup_cornell_box(void) {
         }
     }
 
-    /* Front row — three spheres showcasing diffuse, metal, glass */
-    add_sphere(v3(-1.2f, 0.35f, 0.2f), 0.55f, sapphire);    /* blue glass */
-    add_sphere(v3(0.0f,  0.40f, 0.2f), 0.55f, emerald);     /* green glass */
-    add_sphere(v3(1.2f,  0.30f, 0.2f), 0.55f, amber);       /* amber glass */
+    /* Front row — three glass spheres close to camera, large and prominent */
+    add_sphere(v3(-1.0f, 0.80f, 0.8f), 0.65f, sapphire);    /* blue glass — front left */
+    add_sphere(v3(0.0f,  0.85f, 0.5f), 0.70f, emerald);     /* green glass — dead center */
+    add_sphere(v3(1.0f,  0.75f, 0.8f), 0.65f, amber);       /* amber glass — front right */
 
     /* Mid row — main showcase */
     add_sphere(v3(1.30f, 0.65f, -0.6f), 0.55f, metal_brushed); /* brushed silver */

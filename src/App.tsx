@@ -255,9 +255,18 @@ export default function App() {
     setEnvMapId(id);
     const worker = workerRef.current;
     if (!worker) return;
+
+    // Stop any in-progress render
+    const wasRendering = activeRef.current;
+    activeRef.current = false;
+    wantsRenderRef.current = false;
+
     if (id < 0) {
-      // Procedural sky
+      // Procedural sky — reset accum and restart if was rendering
       worker.postMessage({ type: 'setUseEnvMap', use: false });
+      setSamples(0); samplesRef.current = 0;
+      setRaysPerSec(0); setRenderTime(0);
+      if (wasRendering) startPump();
       return;
     }
     const map = ENV_MAPS.find(m => m.id === id);
@@ -276,16 +285,21 @@ export default function App() {
           data: floats,
           width: 128,
           height: 64,
-        }, [floats.buffer]); // transfer ownership for speed
+        }, [floats.buffer]);
         worker.postMessage({ type: 'setUseEnvMap', use: true });
         setEnvMapLoading(false);
+        // Reset stats for fresh start
+        setSamples(0); samplesRef.current = 0;
+        setRaysPerSec(0); setRenderTime(0);
+        // Restart render pump if it was running
+        if (wasRendering) startPump();
       })
       .catch(err => {
         setError('Failed to load env map: ' + err.message);
         setEnvMapLoading(false);
         setEnvMapId(-1);
       });
-  }, []);
+  }, [startPump]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
