@@ -510,7 +510,7 @@ static void setup_cosmic(void) {
      * Self-luminous faint nebula. Without explicit light sampling in the path tracer,
      * tiny stars are near-impossible to hit randomly. A dimly emissive sky dome provides
      * ambient fill so spheres aren't invisible — think cosmic background glow. */
-    int void_mat   = add_material(v3(0,0,0), v3(0.006,0.004,0.020), 0, 1, MAT_EMISSIVE);
+    int void_mat   = add_material(v3(0,0,0), v3(0.04,0.03,0.12), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, -500), 490.0f, void_mat);
 
     /* Glass orbs — dark but visible tints for night */
