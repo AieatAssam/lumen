@@ -509,26 +509,27 @@ static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
      * Centered at origin, R=100 encloses camera and all scene objects.
      * Every ray that misses scene geometry hits this self-luminous dome.
-     * Emission provides ambient night-sky fill — cosmic background glow. */
-    int void_mat   = add_material(v3(0,0,0), v3(0.03,0.02,0.10), 0, 1, MAT_EMISSIVE);
+     * Emission must be HIGH because it's attenuated by material albedos
+     * at each bounce. At (0.10, 0.06, 0.25) it reads as a dark night sky. */
+    int void_mat   = add_material(v3(0,0,0), v3(0.10,0.06,0.25), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, 0), 100.0f, void_mat);
 
-    /* Glass orbs — dark but visible tints for night */
-    int orb_ice    = add_material(v3(0.35,0.42,0.65), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
-    int orb_coral  = add_material(v3(0.55,0.18,0.25), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
-    int orb_emerald= add_material(v3(0.10,0.50,0.18), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
-    int orb_amber  = add_material(v3(0.50,0.28,0.08), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
-    int orb_ameth  = add_material(v3(0.35,0.14,0.50), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
-    int orb_diamond= add_material(v3(0.55,0.55,0.55), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
-    /* Rough metals that catch faint starlight */
-    int obsidian   = add_material(v3(0.10,0.08,0.18), v3(0,0,0), 0.06f, 1, MAT_METAL);
-    int dark_iron  = add_material(v3(0.15,0.15,0.18), v3(0,0,0), 0.30f, 1, MAT_METAL);
+    /* Glass orbs — lighter albeo so they reflect/refract the night glow */
+    int orb_ice    = add_material(v3(0.55,0.65,0.90), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
+    int orb_coral  = add_material(v3(0.80,0.25,0.35), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
+    int orb_emerald= add_material(v3(0.18,0.70,0.28), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int orb_amber  = add_material(v3(0.75,0.42,0.12), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
+    int orb_ameth  = add_material(v3(0.55,0.22,0.75), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int orb_diamond= add_material(v3(0.80,0.80,0.80), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
+    /* Rough metals — lighter so they catch what little light exists */
+    int obsidian   = add_material(v3(0.18,0.14,0.30), v3(0,0,0), 0.06f, 1, MAT_METAL);
+    int dark_iron  = add_material(v3(0.25,0.25,0.30), v3(0,0,0), 0.30f, 1, MAT_METAL);
 
-    /* Stars — brighter so recursive rays can actually find them */
-    int star_warm  = add_material(v3(1.0,0.85,0.6), v3(4,1.5,0.4), 0, 1, MAT_EMISSIVE);
-    int star_cool  = add_material(v3(0.7,0.8,1.0), v3(0.8,2,6), 0, 1, MAT_EMISSIVE);
-    int star_red   = add_material(v3(1.0,0.3,0.2), v3(3,0.3,0.1), 0, 1, MAT_EMISSIVE);
-    int star_blue  = add_material(v3(0.2,0.4,1.0), v3(0.3,0.6,5), 0, 1, MAT_EMISSIVE);
+    /* Stars — bright enough to be hit by recursive rays and light the scene */
+    int star_warm  = add_material(v3(1.0,0.85,0.6), v3(8,3,0.6), 0, 1, MAT_EMISSIVE);
+    int star_cool  = add_material(v3(0.7,0.8,1.0), v3(1.5,4,12), 0, 1, MAT_EMISSIVE);
+    int star_red   = add_material(v3(1.0,0.3,0.2), v3(6,0.5,0.15), 0, 1, MAT_EMISSIVE);
+    int star_blue  = add_material(v3(0.2,0.4,1.0), v3(0.5,1,10), 0, 1, MAT_EMISSIVE);
 
     /* Distant nebula — faint haze */
     int nebula     = add_material(v3(0.06,0.03,0.14), v3(0.02,0.01,0.06), 0, 1, MAT_EMISSIVE);
