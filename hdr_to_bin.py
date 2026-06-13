@@ -152,7 +152,7 @@ def downsample_bilinear(src, src_w, src_h, dst_w, dst_h):
 
 def main():
     import glob
-    DST_W, DST_H = 256, 128
+    DST_W, DST_H = 1024, 512
     out_dir = f'public/hdri_{DST_W}x{DST_H}'
     os.makedirs(out_dir, exist_ok=True)
 

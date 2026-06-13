@@ -273,7 +273,7 @@ export default function App() {
     if (!map || !map.file) return;
     setEnvMapLoading(true);
     const baseUrl = import.meta.env.BASE_URL;
-    fetch(baseUrl + 'hdri_256x128/' + map.file)
+    fetch(baseUrl + 'hdri_1024x512/' + map.file)
       .then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.arrayBuffer();
@@ -283,8 +283,8 @@ export default function App() {
         worker.postMessage({
           type: 'loadEnvMap',
           data: floats,
-          width: 256,
-          height: 128,
+          width: 1024,
+          height: 512,
         }, [floats.buffer]);
         worker.postMessage({ type: 'setUseEnvMap', use: true });
         setEnvMapLoading(false);

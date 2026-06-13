@@ -588,7 +588,7 @@ static Vec3 env_map_sample(Vec3 dir) {
     float theta = asinf(clampf(dir.y, -1.0f, 1.0f)); /* [-PI/2, PI/2] */
 
     float u = 0.5f + phi / (2.0f * PI);        /* [0, 1] */
-    float v = 0.5f + theta / PI;               /* [0, 1] */
+    float v = 0.5f - theta / PI;               /* [0, 1] — flip: v=0 is top (zenith) */
 
     /* Bilinear interpolation */
     float px = u * (float)g_env_w - 0.5f;
