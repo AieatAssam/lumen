@@ -5,12 +5,12 @@ import { Stats } from './components/Stats';
 import { Sparkles, Code, RotateCw, ZoomIn, ZoomOut, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const SCENES = [
-  { id: 0, name: 'Cornell Box', desc: 'Sapphire, emerald, amber, diamond, copper & brushed metal — all three material types on display' },
-  { id: 1, name: 'Metal Spheres', desc: 'Mirror → brushed → rough metal plus ruby & aqua glass under procedural sky' },
-  { id: 2, name: 'Glass & Light', desc: 'Five dielectrics (glass, diamond, crystal, amber, amethyst) with metal accents' },
-  { id: 3, name: 'Random Spheres', desc: 'Procedural field: 50/50 metal/dielectric split with a center diamond' },
-  { id: 4, name: 'Checkerboard', desc: 'Metal & glass columns, row of gemstones (ruby/diamond/emerald/sapphire)' },
-  { id: 5, name: 'Cosmic', desc: '200 stars, 10 nebula clouds, 8 floating orbs — ice, coral, emerald, diamond, gold' },
+  { id: 0, name: 'Cornell Box', desc: 'Nested refraction — sapphire/warm, emerald/green, amber/red cores in glass shells, diamond, copper, chrome' },
+  { id: 1, name: 'Metal Spheres', desc: 'Mirror→chrome→brass→iron gradient, nested glass sphere, ruby & aqua glass' },
+  { id: 2, name: 'Glass & Light', desc: 'Two nested pairs (glass+warm, amethyst+cool), diamond, amber — dielectric playground' },
+  { id: 3, name: 'Random Spheres', desc: 'Procedural field: 56% glass/metal (mirror, brass, diamond, ruby, emerald, amber), 44% diffuse' },
+  { id: 4, name: 'Checkerboard', desc: '5 column types (metal+glass), 4 deeply tinted gemstones (ruby/diamond/emerald/sapphire)' },
+  { id: 5, name: 'Cosmic', desc: '200 stars, 10 nebulae, 2 nested orbs (emerald+green, diamond+warm), ice, coral, mirror' },
 ] as const;
 
 const ENV_MAPS = [

@@ -152,27 +152,39 @@ static void add_sphere(Vec3 center, float radius, int mat_id) {
     g_num_spheres++;
 }
 
-/* ── Scene 0: Cornell Box — classic test with rich material variety ── */
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Scene 0: Cornell Box — nested refraction showcase
+ *
+ * NESTED SPHERES: Placing a small sphere at the SAME center as a larger
+ * glass sphere creates a "glass marble" effect — light refracts through
+ * the outer glass shell, hits the inner core, then refracts back out.
+ * This produces dramatic Fresnel reflections on the outer surface with
+ * the inner material visible through the glass.
+ * ═══════════════════════════════════════════════════════════════════════════ */
 static void setup_cornell_box(void) {
     int white = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int red   = add_material(v3(0.70,0.08,0.08), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int green = add_material(v3(0.08,0.50,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int red   = add_material(v3(0.70,0.06,0.06), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int green = add_material(v3(0.06,0.48,0.10), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int floor_gray = add_material(v3(0.4,0.4,0.45), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int floor_dark = add_material(v3(0.15,0.15,0.18), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int floor_dark = add_material(v3(0.13,0.13,0.16), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int light = add_material(v3(1,1,1), v3(15,15,15), 0, 1, MAT_EMISSIVE);
-    /* Metals: polished, brushed, and warm copper */
-    int metal_polished = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.0f, 1, MAT_METAL);
-    int metal_brushed  = add_material(v3(0.92,0.88,0.82), v3(0,0,0), 0.08f, 1, MAT_METAL);
-    int metal_copper   = add_material(v3(0.95,0.55,0.30), v3(0,0,0), 0.05f, 1, MAT_METAL);
-    /* Dielectrics: clear glass (IOR 1.5), diamond (IOR 2.4), sapphire (IOR 1.77 — blue tint) */
-    int glass     = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int diamond   = add_material(v3(1.0,1.0,1.0), v3(0,0,0), 0, 2.4f, MAT_DIELECTRIC);
-    int sapphire  = add_material(v3(0.5,0.6,1.0), v3(0,0,0), 0, 1.77f, MAT_DIELECTRIC);
-    int emerald   = add_material(v3(0.3,0.9,0.4), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
-    int amber     = add_material(v3(1.0,0.75,0.2), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
-    /* Small colored diffuse accents */
-    int blue_diff = add_material(v3(0.15,0.25,0.85), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int purple    = add_material(v3(0.55,0.10,0.65), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    /* Metals with realistic names and albedos */
+    int chrome     = add_material(v3(0.97,0.95,0.92), v3(0,0,0), 0.0f, 1, MAT_METAL);
+    int silver     = add_material(v3(0.92,0.90,0.87), v3(0,0,0), 0.04f, 1, MAT_METAL);
+    int copper     = add_material(v3(0.95,0.54,0.28), v3(0,0,0), 0.06f, 1, MAT_METAL);
+    int brushed_iron = add_material(v3(0.62,0.58,0.55), v3(0,0,0), 0.22f, 1, MAT_METAL);
+    /* Dielectrics — strongly tinted for visible color in both reflection and refraction */
+    int glass      = add_material(v3(0.97,0.97,0.97), v3(0,0,0), 0, 1.50f, MAT_DIELECTRIC);
+    int diamond    = add_material(v3(1.0,1.0,1.0), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
+    int sapphire   = add_material(v3(0.35,0.50,1.0), v3(0,0,0), 0, 1.77f, MAT_DIELECTRIC);
+    int emerald    = add_material(v3(0.15,0.92,0.30), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int ruby       = add_material(v3(0.95,0.08,0.15), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int amber      = add_material(v3(1.0,0.65,0.08), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
+    /* Inner core materials for nested spheres */
+    int core_warm  = add_material(v3(1.0,0.9,0.3), v3(4,2.5,0.5), 0, 1, MAT_EMISSIVE);
+    int core_cool  = add_material(v3(0.3,0.6,1.0), v3(0.5,2,6), 0, 1, MAT_EMISSIVE);
+    int core_green = add_material(v3(0.2,1.0,0.3), v3(0.3,3,0.5), 0, 1, MAT_EMISSIVE);
+    int core_red   = add_material(v3(1.0,0.2,0.2), v3(5,0.5,0.3), 0, 1, MAT_EMISSIVE);
 
     add_sphere(v3(0.9f, 1.96f, -0.5f), 0.16f, light);
 
@@ -191,20 +203,32 @@ static void setup_cornell_box(void) {
         }
     }
 
-    /* Front row — three glass spheres close to camera, large and prominent */
-    add_sphere(v3(-1.0f, 0.80f, 0.8f), 0.65f, sapphire);    /* blue glass — front left */
-    add_sphere(v3(0.0f,  0.85f, 0.5f), 0.70f, emerald);     /* green glass — dead center */
-    add_sphere(v3(1.0f,  0.75f, 0.8f), 0.65f, amber);       /* amber glass — front right */
+    /* ── Nested spheres (glass shell + emissive core) ──
+     * Core is placed at the EXACT SAME CENTER as the glass shell.
+     * Ray hits glass first → refracts → hits inner core → refracts back out.
+     * This creates visible Fresnel on the surface + glowing color inside. */
 
-    /* Mid row — main showcase */
-    add_sphere(v3(1.30f, 0.65f, -0.6f), 0.55f, metal_brushed); /* brushed silver */
-    add_sphere(v3(0.0f,  0.55f, -1.0f), 0.60f, diamond);       /* high-IOR diamond */
-    add_sphere(v3(-1.0f, 0.45f, -1.3f), 0.50f, metal_copper);  /* copper sphere */
+    /* Front-left: sapphire shell with warm golden core */
+    add_sphere(v3(-1.2f, 0.70f, 0.8f), 0.55f, sapphire);
+    add_sphere(v3(-1.2f, 0.70f, 0.8f), 0.22f, core_warm);
 
-    /* Back — polished chrome and a small colored diffuse */
-    add_sphere(v3(2.2f, 0.25f, -1.8f), 0.35f, metal_polished);  /* polished chrome */
-    add_sphere(v3(-2.2f,0.25f, -1.8f), 0.35f, glass);          /* clear glass */
-    add_sphere(v3(0.0f, 0.15f, -2.2f), 0.22f, purple);         /* small purple accent */
+    /* Front-center: emerald shell with green-glowing core — the showpiece */
+    add_sphere(v3(0.0f,  0.75f, 0.5f), 0.65f, emerald);
+    add_sphere(v3(0.0f,  0.75f, 0.5f), 0.25f, core_green);
+
+    /* Front-right: amber shell with red-glowing core */
+    add_sphere(v3(1.2f,  0.65f, 0.8f), 0.55f, amber);
+    add_sphere(v3(1.2f,  0.65f, 0.8f), 0.22f, core_red);
+
+    /* Mid row — standalone showcase spheres */
+    add_sphere(v3(1.40f, 0.55f, -0.6f), 0.50f, silver);      /* polished silver */
+    add_sphere(v3(0.0f,  0.50f, -1.0f), 0.58f, diamond);     /* diamond (IOR 2.42) */
+    add_sphere(v3(-1.2f, 0.40f, -1.3f), 0.48f, copper);      /* copper */
+
+    /* Back row */
+    add_sphere(v3(2.2f, 0.25f, -1.8f), 0.32f, chrome);       /* mirror chrome */
+    add_sphere(v3(-2.2f,0.25f, -1.8f), 0.32f, glass);        /* clear glass */
+    add_sphere(v3(0.0f, 0.15f, -2.0f), 0.20f, ruby);         /* ruby accent near wall */
 
     g_camera.eye = v3(0, 1.3f, 4.0f);
     g_camera.lookat = v3(0, 0.5f, -0.5f);
@@ -219,15 +243,17 @@ static void setup_metal_spheres(void) {
     int ground   = add_material(v3(0.25,0.28,0.35), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int ground2  = add_material(v3(0.55,0.52,0.45), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int center   = add_material(v3(0.8,0.25,0.25), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    /* Metal range: mirror → brushed → rough */
-    int chrome   = add_material(v3(0.97,0.95,0.92), v3(0,0,0), 0.0f, 1, MAT_METAL);
-    int silver   = add_material(v3(0.88,0.88,0.88), v3(0,0,0), 0.03f, 1, MAT_METAL);
-    int brass    = add_material(v3(0.85,0.65,0.20), v3(0,0,0), 0.10f, 1, MAT_METAL);
-    int rough_metal = add_material(v3(0.75,0.70,0.65), v3(0,0,0), 0.30f, 1, MAT_METAL);
-    /* Glass range: clear and colored */
-    int glass    = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int ruby     = add_material(v3(0.95,0.15,0.20), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
-    int aqua     = add_material(v3(0.15,0.85,0.85), v3(0,0,0), 0, 1.33f, MAT_DIELECTRIC);
+    /* Metal range: mirror → polished → brushed → rough */
+    int mirror   = add_material(v3(0.98,0.96,0.94), v3(0,0,0), 0.0f, 1, MAT_METAL);
+    int chrome   = add_material(v3(0.92,0.90,0.87), v3(0,0,0), 0.02f, 1, MAT_METAL);
+    int brass    = add_material(v3(0.88,0.68,0.22), v3(0,0,0), 0.08f, 1, MAT_METAL);
+    int iron     = add_material(v3(0.58,0.54,0.50), v3(0,0,0), 0.28f, 1, MAT_METAL);
+    /* Colored glass — deeply saturated for visible tint */
+    int glass    = add_material(v3(0.97,0.97,0.97), v3(0,0,0), 0, 1.50f, MAT_DIELECTRIC);
+    int ruby     = add_material(v3(0.94,0.06,0.12), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int aqua     = add_material(v3(0.08,0.88,0.90), v3(0,0,0), 0, 1.33f, MAT_DIELECTRIC);
+    /* Nested: clear glass shell + warm emissive core */
+    int core_warm = add_material(v3(1.0,0.85,0.3), v3(3,2,0.3), 0, 1, MAT_EMISSIVE);
     /* Fill lights */
     int fill  = add_material(v3(0.6,0.7,0.9), v3(1.5,2,3), 0, 1, MAT_EMISSIVE);
     int fill2 = add_material(v3(0.9,0.8,0.6), v3(2,1.5,0.8), 0, 1, MAT_EMISSIVE);
@@ -243,16 +269,20 @@ static void setup_metal_spheres(void) {
     /* Center — large diffuse anchor */
     add_sphere(v3(0, 0.8f, -1), 1.2f, center);
 
-    /* Metal row — mirror → rough transition */
-    add_sphere(v3(-3.0f, 0.6f, -1.5f), 0.9f, chrome);      /* mirror */
-    add_sphere(v3(-1.8f, 0.5f, -2.3f), 0.7f, silver);      /* polished silver */
+    /* Metal row — mirror → rough gradient */
+    add_sphere(v3(-3.0f, 0.6f, -1.5f), 0.9f, mirror);      /* perfect mirror */
+    add_sphere(v3(-1.6f, 0.5f, -2.2f), 0.7f, chrome);      /* polished chrome */
     add_sphere(v3(1.8f,  0.5f, -2.0f), 0.8f, brass);       /* brushed brass */
-    add_sphere(v3(3.0f,  0.5f, -1.2f), 0.9f, rough_metal); /* rough iron */
+    add_sphere(v3(3.0f,  0.5f, -1.2f), 0.9f, iron);        /* rough iron */
 
-    /* Glass row — clear and colored */
-    add_sphere(v3(-1.2f, 0.35f, 0.3f), 0.45f, glass);  /* clear */
-    add_sphere(v3(1.2f,  0.35f, 0.2f), 0.42f, ruby);   /* red glass */
+    /* Glass row */
+    add_sphere(v3(-1.2f, 0.35f, 0.3f), 0.45f, glass);  /* clear glass */
+    add_sphere(v3(1.2f,  0.35f, 0.2f), 0.42f, ruby);   /* deep red glass */
     add_sphere(v3(2.5f,  0.30f, -0.5f), 0.38f, aqua);  /* teal glass */
+
+    /* Nested sphere: clear glass shell + warm core — left side */
+    add_sphere(v3(-1.8f, 0.50f, -0.3f), 0.48f, glass);
+    add_sphere(v3(-1.8f, 0.50f, -0.3f), 0.20f, core_warm);
 
     /* Distant fill lights */
     add_sphere(v3(-8, 10, 6), 0.8f, fill);
@@ -286,6 +316,9 @@ static void setup_glass_light(void) {
     /* Lighting */
     int light   = add_material(v3(1,1,0.95), v3(1.5,1.5,1), 0, 1, MAT_EMISSIVE);
     int warm_light = add_material(v3(1,0.85,0.6), v3(2.5,1.5,0.5), 0, 1, MAT_EMISSIVE);
+    /* Nested cores */
+    int core_warm = add_material(v3(1.0,0.85,0.3), v3(3,2,0.3), 0, 1, MAT_EMISSIVE);
+    int core_cool = add_material(v3(0.3,0.5,1.0), v3(0.5,2,5), 0, 1, MAT_EMISSIVE);
 
     /* Checker ground */
     for (int ix = -3; ix <= 3; ix++) {
@@ -295,12 +328,16 @@ static void setup_glass_light(void) {
         }
     }
 
-    /* Main glass showcase — 5 dielectrics across the scene */
+    /* Main glass showcase — 5 dielectrics + 2 nested pairs */
     add_sphere(v3(-2.5f, 0.8f, -1.8f), 0.9f, glass);     /* clear glass */
     add_sphere(v3(-1.2f, 0.7f, -2.5f), 0.8f, diamond);   /* high-IOR sparkle */
-    add_sphere(v3(0.0f,  0.6f, -1.2f), 0.7f, crystal);   /* blue-tinted */
+    /* Nested: clear glass shell with warm glow inside */
+    add_sphere(v3(0.0f,  0.6f, -1.2f), 0.7f, glass);
+    add_sphere(v3(0.0f,  0.6f, -1.2f), 0.25f, core_warm);
     add_sphere(v3(1.5f,  0.5f, -2.0f), 0.7f, amber);     /* warm amber */
-    add_sphere(v3(2.8f,  0.4f, -1.2f), 0.6f, amethyst);   /* purple */
+    /* Nested: amethyst shell with cool glow */
+    add_sphere(v3(2.8f,  0.4f, -1.2f), 0.6f, amethyst);
+    add_sphere(v3(2.8f,  0.4f, -1.2f), 0.22f, core_cool);
 
     /* Metal and diffuse accents scattered about */
     add_sphere(v3(-0.6f, 0.3f, 0.1f), 0.35f, metal);     /* polished metal */
@@ -335,11 +372,12 @@ static void setup_random_spheres(void) {
     int silver   = add_material(v3(0.90,0.88,0.85), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int gold     = add_material(v3(0.95,0.80,0.25), v3(0,0,0), 0.03f, 1, MAT_METAL);
     int iron     = add_material(v3(0.70,0.65,0.60), v3(0,0,0), 0.25f, 1, MAT_METAL);
-    /* Dielectrics: clear glass, diamond, amber, emerald */
-    int glass    = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.50f, MAT_DIELECTRIC);
+    /* Dielectrics — strong tints */
+    int glass    = add_material(v3(0.97,0.97,0.97), v3(0,0,0), 0, 1.50f, MAT_DIELECTRIC);
     int diamond  = add_material(v3(1.0,1.0,1.0), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
-    int amber    = add_material(v3(1.0,0.70,0.15), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
-    int emerald  = add_material(v3(0.25,0.90,0.35), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int amber    = add_material(v3(1.0,0.60,0.06), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
+    int emerald  = add_material(v3(0.12,0.94,0.25), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int ruby_rnd = add_material(v3(0.94,0.06,0.12), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
     int ground_a = add_material(v3(0.25,0.25,0.30), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int ground_b = add_material(v3(0.45,0.45,0.48), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int sun = add_material(v3(1,0.95,0.8), v3(2,1.5,1), 0, 1, MAT_EMISSIVE);
@@ -369,6 +407,7 @@ static void setup_random_spheres(void) {
         else if (choice < 0.42f) mat = diamond;
         else if (choice < 0.47f) mat = amber;
         else if (choice < 0.52f) mat = emerald;
+        else if (choice < 0.56f) mat = ruby_rnd;
         else mat = colors[(int)(randf(&rng) * 6)];
         add_sphere(v3(x, y, z), r, mat);
     }
@@ -398,11 +437,11 @@ static void setup_checkerboard(void) {
     int glass_col  = add_material(v3(0.95,0.95,0.95), v3(0,0,0), 0, 1.52f, MAT_DIELECTRIC);
     int amber_col  = add_material(v3(1.0,0.70,0.12), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
     /* Centerpiece spheres */
-    int chrome = add_material(v3(0.97,0.95,0.92), v3(0,0,0), 0.0f, 1, MAT_METAL);
+    int chrome  = add_material(v3(0.97,0.95,0.92), v3(0,0,0), 0.0f, 1, MAT_METAL);
     int diamond = add_material(v3(1.0,1.0,1.0), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
-    int ruby    = add_material(v3(0.95,0.12,0.20), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
-    int emerald = add_material(v3(0.20,0.88,0.30), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
-    int sapphire= add_material(v3(0.4,0.5,1.0), v3(0,0,0), 0, 1.77f, MAT_DIELECTRIC);
+    int ruby    = add_material(v3(0.94,0.06,0.12), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int emerald = add_material(v3(0.10,0.94,0.22), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int sapphire = add_material(v3(0.25,0.40,1.0), v3(0,0,0), 0, 1.77f, MAT_DIELECTRIC);
     int sun   = add_material(v3(1,1,1), v3(3,2.5,2), 0, 1, MAT_EMISSIVE);
 
     /* Checkerboard floor */
@@ -478,6 +517,9 @@ static void setup_cosmic(void) {
     /* Ground */
     int ground     = add_material(v3(0.06,0.06,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int ground2    = add_material(v3(0.12,0.12,0.20), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    /* Nested cores */
+    int core_green = add_material(v3(0.15,1.0,0.25), v3(0.3,4,0.5), 0, 1, MAT_EMISSIVE);
+    int core_warm  = add_material(v3(1.0,0.85,0.25), v3(4,2.5,0.3), 0, 1, MAT_EMISSIVE);
 
     /* Dark dome — alternating deep space patches */
     float R = 16.0f;
@@ -527,13 +569,17 @@ static void setup_cosmic(void) {
         }
     }
 
-    /* Triangle formation — 6 glass orbs at different scales */
+    /* Triangle formation — 6 orbs, 2 are nested pairs */
     add_sphere(v3(-2.0f, 1.0f, -2.0f), 1.0f, orb_ice);      /* top-left: ice */
     add_sphere(v3(2.0f,  0.6f, -1.8f), 0.85f, orb_coral);   /* top-right: coral */
-    add_sphere(v3(0.5f,  0.1f, -3.0f), 0.7f, orb_emerald);  /* bottom: emerald */
+    /* Nested: emerald shell + bright green core */
+    add_sphere(v3(0.5f,  0.1f, -3.0f), 0.7f, orb_emerald);
+    add_sphere(v3(0.5f,  0.1f, -3.0f), 0.25f, core_green);
     add_sphere(v3(-1.5f, 0.5f, -3.8f), 0.5f, mirror);       /* mid-left: mirror */
     add_sphere(v3(2.2f,  0.2f, -3.0f), 0.55f, orb_amber);   /* mid-right: amber */
-    add_sphere(v3(0.0f, -0.3f, -1.5f), 0.45f, orb_diamond); /* front-center: diamond */
+    /* Nested: diamond shell + warm core */
+    add_sphere(v3(0.0f, -0.3f, -1.5f), 0.45f, orb_diamond);
+    add_sphere(v3(0.0f, -0.3f, -1.5f), 0.16f, core_warm);
     /* Bonus floating orbs */
     add_sphere(v3(-0.8f, -0.5f, -2.2f), 0.35f, orb_ameth);
     add_sphere(v3(1.2f,  -0.2f, -2.5f), 0.30f, gold_orb);
