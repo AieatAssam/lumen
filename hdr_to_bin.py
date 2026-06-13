@@ -152,7 +152,9 @@ def downsample_bilinear(src, src_w, src_h, dst_w, dst_h):
 
 def main():
     import glob
-    os.makedirs('public/hdri_128x64', exist_ok=True)
+    DST_W, DST_H = 256, 128
+    out_dir = f'public/hdri_{DST_W}x{DST_H}'
+    os.makedirs(out_dir, exist_ok=True)
 
     hdr_files = sorted(glob.glob('public/hdri/*.hdr'))
     if not hdr_files:
@@ -161,7 +163,7 @@ def main():
 
     for hdr_path in hdr_files:
         basename = os.path.splitext(os.path.basename(hdr_path))[0]
-        out_path = f'public/hdri_128x64/{basename}.bin'
+        out_path = f'{out_dir}/{basename}.bin'
 
         print(f"Processing {basename}...")
 
@@ -170,33 +172,39 @@ def main():
 
         print(f"  Source: {src_w}x{src_h}, pixels: {len(src_pixels)//3}")
 
-        # Downsample to 128x64
-        dst_pixels = downsample_bilinear(src_pixels, src_w, src_h, 128, 64)
+        # Downsample to target
+        dst_pixels = downsample_bilinear(src_pixels, src_w, src_h, DST_W, DST_H)
 
-        # Compute exposure normalization: find the 99.9th percentile
-        # to avoid a few super-bright sun pixels dominating
-        flat = sorted(dst_pixels, reverse=True)
+        # Robust normalization using percentiles to prevent bleaching from outliers
+        flat = sorted(dst_pixels)
         n = len(dst_pixels)
-        p999 = flat[max(0, int(n * 0.001))]  # 99.9th percentile
+        p50  = flat[int(n * 0.50)]   # median
+        p999 = flat[int(n * 0.999)]  # 99.9th percentile
+        p9999 = flat[max(0, int(n * 0.9999))]  # 99.99th
+        max_val = flat[-1]
 
-        print(f"  99.9th percentile brightness: {p999:.4f}")
+        print(f"  median={p50:.4f}  99.9%={p999:.4f}  99.99%={p9999:.4f}  max={max_val:.4f}")
 
-        if p999 < 0.01:
-            print(f"  WARNING: very dark HDR, skipping normalization")
-            p999 = 1.0
+        # Scale so 99.9th percentile maps to ~4.0 (comfortable for ACES)
+        # Then CLAMP at 3x the 99.9th percentile to kill outlier bleaching
+        target = 4.0
+        scale = target / max(p999, 0.001)
+        clamp = max(p9999 * 1.2, target * 3.0) * scale  # generous cap
 
-        # Normalize so 99.9th percentile maps to ~5.0 (works well with ACES)
-        target_peak = 5.0
-        scale = target_peak / max(p999, 1e-6)
+        print(f"  scale={scale:.4f}  clamp={clamp:.2f}")
 
-        # Apply normalization
-        normalized = [v * scale for v in dst_pixels]
+        # Apply normalization with clamping
+        normalized = [min(v * scale, clamp) for v in dst_pixels]
+
+        # Verify post-normalization stats
+        flat2 = sorted(normalized)
+        print(f"  post: 99.9%={flat2[int(n*0.999)]:.2f}  max={flat2[-1]:.2f}  over10={sum(1 for v in normalized if v>10)}/{n}")
 
         # Write float32 binary
         f32 = struct.pack(f'{len(normalized)}f', *normalized)
         with open(out_path, 'wb') as outf:
             outf.write(f32)
-        print(f"  → {out_path} ({len(f32)} bytes, scale={scale:.4f})")
+        print(f"  → {out_path} ({len(f32)} bytes)")
 
     print(f"\nDone! {len(hdr_files)} files converted.")
 

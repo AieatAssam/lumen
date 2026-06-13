@@ -616,17 +616,18 @@ static Vec3 env_map_sample(Vec3 dir) {
     float *p01 = g_env_map + (y1 * g_env_w + x0) * 3;
     float *p11 = g_env_map + (y1 * g_env_w + x1) * 3;
 
-    /* Exposure normalization: HDR values are already pre-normalized
-     * (99.9th percentile ≈ 5.0, works well with ACES tone mapping). */
+    /* Pre-normalized HDRI values (99.9th percentile ≈ 4.0, clamped at ~12).
+     * Safety clamp: cap any residual outliers at 15 to prevent ACES bleaching. */
+    float r = ((p00[0] * (1.0f - fx) + p10[0] * fx) * (1.0f - fy) +
+               (p01[0] * (1.0f - fx) + p11[0] * fx) * fy);
+    float g = ((p00[1] * (1.0f - fx) + p10[1] * fx) * (1.0f - fy) +
+               (p01[1] * (1.0f - fx) + p11[1] * fx) * fy);
+    float b = ((p00[2] * (1.0f - fx) + p10[2] * fx) * (1.0f - fy) +
+               (p01[2] * (1.0f - fx) + p11[2] * fx) * fy);
 
-    return v3(
-        ((p00[0] * (1.0f - fx) + p10[0] * fx) * (1.0f - fy) +
-         (p01[0] * (1.0f - fx) + p11[0] * fx) * fy),
-        ((p00[1] * (1.0f - fx) + p10[1] * fx) * (1.0f - fy) +
-         (p01[1] * (1.0f - fx) + p11[1] * fx) * fy),
-        ((p00[2] * (1.0f - fx) + p10[2] * fx) * (1.0f - fy) +
-         (p01[2] * (1.0f - fx) + p11[2] * fx) * fy)
-    );
+    return v3(clampf(r, 0.0f, 15.0f),
+              clampf(g, 0.0f, 15.0f),
+              clampf(b, 0.0f, 15.0f));
 }
 
 /* ── Procedural noise for clouds ── */
