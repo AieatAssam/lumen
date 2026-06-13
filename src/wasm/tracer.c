@@ -152,7 +152,7 @@ static void setup_cornell_box(void) {
     int green = add_material(v3(0.08,0.55,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int floor_gray = add_material(v3(0.4,0.4,0.45), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int floor_dark = add_material(v3(0.15,0.15,0.18), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int light = add_material(v3(1,1,1), v3(40,40,40), 0, 1, MAT_EMISSIVE);
+    int light = add_material(v3(1,1,1), v3(15,15,15), 0, 1, MAT_EMISSIVE);
     int metal = add_material(v3(0.92,0.88,0.82), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int glass = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
 
@@ -193,8 +193,10 @@ static void setup_metal_spheres(void) {
     int right    = add_material(v3(0.85,0.65,0.2), v3(0,0,0), 0.2f, 1, MAT_METAL);
     int chrome   = add_material(v3(0.95,0.93,0.9), v3(0,0,0), 0.0f, 1, MAT_METAL);
     int glass    = add_material(v3(0.95,0.95,0.95), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
-    int sun      = add_material(v3(1,1,1), v3(24,21,15), 0, 1, MAT_EMISSIVE);
-    int bluelight = add_material(v3(0.3,0.5,1), v3(12,14,22), 0, 1, MAT_EMISSIVE);
+    /* Remove scene sun — rich procedural sky handles outdoor illumination */
+    /* Small fill lights only */
+    int fill = add_material(v3(0.6,0.7,0.9), v3(1.5,2,3), 0, 1, MAT_EMISSIVE);
+    int fill2 = add_material(v3(0.9,0.8,0.6), v3(2,1.5,0.8), 0, 1, MAT_EMISSIVE);
 
     /* Gradient ground — checker of two grays */
     for (int ix = -3; ix <= 3; ix++) {
@@ -209,8 +211,9 @@ static void setup_metal_spheres(void) {
     add_sphere(v3(3.0f, 0.5f, -1.5f), 1.0f, right);
     add_sphere(v3(-1.5f, 0.4f, -2.5f), 0.55f, chrome);
     add_sphere(v3(1.8f, 0.35f, 0.2f), 0.4f, glass);
-    add_sphere(v3(3, 5, 2), 2.0f, sun);
-    add_sphere(v3(-4, 3, -2), 1.0f, bluelight);
+    /* Distant fill lights for subtle ambient */
+    add_sphere(v3(-8, 10, 6), 0.8f, fill);
+    add_sphere(v3(6, 8, 8), 0.5f, fill2);
 
     g_camera.eye = v3(0, 1.6f, 4.5f);
     g_camera.lookat = v3(0, 0.5f, -1);
@@ -227,7 +230,7 @@ static void setup_glass_light(void) {
     int glass1 = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int glass2 = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int metal  = add_material(v3(0.95,0.93,0.88), v3(0,0,0), 0.01f, 1, MAT_METAL);
-    int light  = add_material(v3(1,1,0.95), v3(36,30,24), 0, 1, MAT_EMISSIVE);
+    int light  = add_material(v3(1,1,0.95), v3(1.5,1.5,1), 0, 1, MAT_EMISSIVE);
     int red    = add_material(v3(0.9,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int blue   = add_material(v3(0.15,0.2,0.9), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int gold   = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.05f, 1, MAT_METAL);
@@ -246,7 +249,7 @@ static void setup_glass_light(void) {
     add_sphere(v3(-0.6f, 0.35f, -0.1f), 0.4f, red);
     add_sphere(v3(1.6f, 0.3f, -2.5f), 0.35f, blue);
     add_sphere(v3(-2.5f, 0.5f, -2.0f), 0.3f, gold);
-    add_sphere(v3(2, 5, 1), 1.5f, light);
+    add_sphere(v3(8, 12, 8), 0.3f, light);
 
     g_camera.eye = v3(0, 1.5f, 4.0f);
     g_camera.lookat = v3(0, 0.5f, -1.2f);
@@ -269,7 +272,7 @@ static void setup_random_spheres(void) {
     int glass = add_material(v3(0.98,0.98,0.98), v3(0,0,0), 0, 1.5f, MAT_DIELECTRIC);
     int ground_a = add_material(v3(0.25,0.25,0.30), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int ground_b = add_material(v3(0.45,0.45,0.48), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int sun = add_material(v3(1,0.95,0.8), v3(30,27,21), 0, 1, MAT_EMISSIVE);
+    int sun = add_material(v3(1,0.95,0.8), v3(2,1.5,1), 0, 1, MAT_EMISSIVE);
 
     /* Checker ground */
     for (int ix = -4; ix <= 4; ix++) {
@@ -297,8 +300,8 @@ static void setup_random_spheres(void) {
     /* Large center glass sphere */
     add_sphere(v3(0, 0.9f, -1.8f), 0.9f, glass);
 
-    /* Sun above */
-    add_sphere(v3(0, 7, 4), 1.5f, sun);
+    /* Sun far above */
+    add_sphere(v3(8, 16, 12), 0.3f, sun);
 
     g_camera.eye = v3(0, 2.2f, 5.0f);
     g_camera.lookat = v3(0, 0.5f, -0.5f);
@@ -315,8 +318,7 @@ static void setup_checkerboard(void) {
     int red   = add_material(v3(0.8,0.15,0.15), v3(0,0,0), 0.05f, 1, MAT_METAL);
     int blue  = add_material(v3(0.15,0.2,0.8), v3(0,0,0), 0.1f, 1, MAT_METAL);
     int gold  = add_material(v3(0.95,0.85,0.3), v3(0,0,0), 0.02f, 1, MAT_METAL);
-    int sun   = add_material(v3(1,1,1), v3(80,72,60), 0, 1, MAT_EMISSIVE);
-    int ambient = add_material(v3(0.9,0.9,1.0), v3(9,9,12), 0, 1, MAT_EMISSIVE);
+    int sun   = add_material(v3(1,1,1), v3(3,2.5,2), 0, 1, MAT_EMISSIVE);
 
     /* Checkerboard floor — overlapping spheres for a smooth surface */
     for (int ix = -7; ix <= 7; ix++) {
@@ -338,11 +340,8 @@ static void setup_checkerboard(void) {
     add_sphere(v3(0, 0.6f, -2.5f), 0.6f, gold);
     add_sphere(v3(-3.5f, 0.5f, -3.0f), 0.5f, blue);
 
-    /* Sun */
-    add_sphere(v3(5, 8, 5), 2.0f, sun);
-
-    /* Large ambient overhead light for soft fill */
-    add_sphere(v3(0, 10, 0), 8.0f, ambient);
+    /* Distant sun, sky handles main illumination */
+    add_sphere(v3(10, 18, 12), 0.5f, sun);
 
     g_camera.eye = v3(0, 1.8f, 5.0f);
     g_camera.lookat = v3(0, 1.0f, -2.0f);
@@ -352,23 +351,70 @@ static void setup_checkerboard(void) {
     g_camera.focus_dist = 5.0f;
 }
 
-/* ── Scene 5: Cosmic (abstract floating orbs) ── */
+/* ── Scene 5: Cosmic (abstract floating orbs with starfield dome) ── */
 static void setup_cosmic(void) {
-    int bg = add_material(v3(0.02,0.02,0.06), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* deep space */
+    int bg   = add_material(v3(0.03,0.02,0.10), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* deep space */
+    int bg2  = add_material(v3(0.05,0.03,0.12), v3(0.001,0.001,0.003), 0, 1, MAT_EMISSIVE); /* subtle nebula glow */
     int orb1 = add_material(v3(0.2,0.6,1.0), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
     int orb2 = add_material(v3(1.0,0.3,0.5), v3(0,0,0), 0, 1.4f, MAT_DIELECTRIC);
     int orb3 = add_material(v3(0.3,1.0,0.3), v3(0,0,0), 0, 1.3f, MAT_DIELECTRIC);
     int orb4 = add_material(v3(0.9,0.7,0.2), v3(0,0,0), 0, 1.2f, MAT_DIELECTRIC);
     int orb5 = add_material(v3(0.7,0.3,0.9), v3(0,0,0), 0, 1.35f, MAT_DIELECTRIC);
-    int light1 = add_material(v3(1,0.85,0.6), v3(60,48,24), 0, 1, MAT_EMISSIVE);
-    int light2 = add_material(v3(0.6,0.85,1), v3(24,36,75), 0, 1, MAT_EMISSIVE);
-    int light3 = add_material(v3(0.9,0.6,1), v3(45,24,54), 0, 1, MAT_EMISSIVE);
-    int light4 = add_material(v3(0.7,1.0,0.7), v3(20,30,18), 0, 1, MAT_EMISSIVE);
+    int light1 = add_material(v3(1,0.85,0.6), v3(20,16,8), 0, 1, MAT_EMISSIVE);
+    int light2 = add_material(v3(0.6,0.85,1), v3(8,12,25), 0, 1, MAT_EMISSIVE);
+    int light3 = add_material(v3(0.9,0.6,1), v3(15,8,18), 0, 1, MAT_EMISSIVE);
+    int light4 = add_material(v3(0.7,1.0,0.7), v3(8,12,7), 0, 1, MAT_EMISSIVE);
     int mirror = add_material(v3(1,1,1), v3(0,0,0), 0.0f, 1, MAT_METAL);
     int ground = add_material(v3(0.08,0.08,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    /* Star colors */
+    int star_warm  = add_material(v3(1.0,0.9,0.7), v3(9,6,3), 0, 1, MAT_EMISSIVE);
+    int star_cool  = add_material(v3(0.7,0.8,1.0), v3(4,6,12), 0, 1, MAT_EMISSIVE);
+    int star_red   = add_material(v3(1.0,0.4,0.3), v3(6,1,1), 0, 1, MAT_EMISSIVE);
+    int star_blue  = add_material(v3(0.3,0.5,1.0), v3(2,3,10), 0, 1, MAT_EMISSIVE);
+    int nebula     = add_material(v3(0.5,0.3,0.8), v3(0.6,0.2,1.2), 0, 1, MAT_EMISSIVE);
+    int nebula2    = add_material(v3(0.3,0.6,0.5), v3(0.3,0.8,0.4), 0, 1, MAT_EMISSIVE);
 
-    /* Large dark enclosing sphere */
-    add_sphere(v3(0, 0, 0), 20.0f, bg);
+    /* Dark dome with subtle pattern — alternating deep space patches */
+    float R = 18.0f;
+    for (int ix = -4; ix <= 4; ix++) {
+        for (int iy = -2; iy <= 3; iy++) {
+            float x = (float)ix * 2.8f;
+            float y = (float)iy * 2.8f;
+            float z = -R * 0.7f;
+            float dist = sqrtf(x*x + y*y + z*z);
+            if (dist > R - 1.5f) {
+                int mat = ((ix + iy) & 1) ? bg : bg2;
+                add_sphere(v3(x, y, z), 1.6f, mat);
+            }
+        }
+    }
+    /* Additional far-dome patches */
+    add_sphere(v3(0, 0, -R * 0.95f), R * 0.65f, bg2);
+
+    /* Stars scattered on dome interior */
+    unsigned int rng = 137;
+    int star_mats[] = { star_warm, star_cool, star_red, star_blue };
+    for (int i = 0; i < 120; i++) {
+        /* Random direction on sphere */
+        float theta = 2.0f * PI * randf(&rng);
+        float phi = acosf(2.0f * randf(&rng) - 1.0f);
+        float sr = 12.0f + randf(&rng) * 6.0f;
+        float sx = sr * sinf(phi) * cosf(theta);
+        float sy = sr * sinf(phi) * sinf(theta);
+        float sz = sr * cosf(phi) - 1.0f;  /* center around z=-1 */
+        float size = 0.04f + randf(&rng) * 0.10f;
+        int smat = star_mats[(int)(randf(&rng) * 4)];
+        add_sphere(v3(sx, sy, sz), size, smat);
+    }
+
+    /* Nebula clouds */
+    for (int i = 0; i < 8; i++) {
+        float nx = (randf(&rng) - 0.5f) * 12.0f;
+        float ny = (randf(&rng) - 0.5f) * 6.0f;
+        float nz = -6.0f + (randf(&rng) - 0.5f) * 10.0f;
+        int nm = (i & 1) ? nebula : nebula2;
+        add_sphere(v3(nx, ny, nz), 0.8f + randf(&rng) * 1.2f, nm);
+    }
 
     /* Ground disc */
     add_sphere(v3(0, -3.0f, -1.0f), 5.0f, ground);
@@ -427,37 +473,146 @@ static int intersect(Ray *ray, Hit *hit) {
     return hit->t < INF;
 }
 
-/* ── Sky with sun disk and atmospheric gradient ── */
-static Vec3 sky_color(Ray *ray) {
-    Vec3 unit = v3_norm(ray->dir);
-    float t = 0.5f * (unit.y + 1.0f);
+/* ── Procedural noise for clouds ── */
+static float hash_float(int ix, int iy) {
+    int n = (ix * 1271 + iy * 3117) ^ (ix * 3769 + iy * 6133);
+    n = (n << 13) ^ n;
+    return (float)((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 2147483648.0f;
+}
 
-    /* Atmospheric gradient: white overhead → blue at horizon → warm at ground */
-    Vec3 horizon = v3(0.62f, 0.78f, 1.0f);
-    Vec3 zenith  = v3(0.25f, 0.45f, 0.85f);
-    Vec3 ground  = v3(0.95f, 0.85f, 0.70f);
+static float smooth_noise(float u, float v, float scale) {
+    float su = u * scale;
+    float sv = v * scale;
+    int iu = (int)floorf(su);
+    int iv = (int)floorf(sv);
+    float fu = su - (float)iu;
+    float fv = sv - (float)iv;
+    /* Smoothstep */
+    fu = fu * fu * (3.0f - 2.0f * fu);
+    fv = fv * fv * (3.0f - 2.0f * fv);
+    float n00 = hash_float(iu, iv);
+    float n10 = hash_float(iu + 1, iv);
+    float n01 = hash_float(iu, iv + 1);
+    float n11 = hash_float(iu + 1, iv + 1);
+    return n00 * (1.0f - fu) * (1.0f - fv) +
+           n10 * fu * (1.0f - fv) +
+           n01 * (1.0f - fu) * fv +
+           n11 * fu * fv;
+}
+
+static float fbm(Vec3 dir, int octaves, float lacunarity, float gain) {
+    /* Map direction to a sphere-unwrapped UV using azimuth and elevation */
+    float az = atan2f(dir.z, dir.x);          /* [-PI, PI] */
+    float el = asinf(clampf(dir.y, -1.0f, 1.0f)); /* [-PI/2, PI/2] */
+    float u = az / (2.0f * PI) + 0.5f;        /* [0, 1] */
+    float v = el / PI + 0.5f;                 /* [0, 1] */
+
+    float value = 0.0f;
+    float amplitude = 1.0f;
+    float frequency = 1.0f;
+    float max_val = 0.0f;
+
+    for (int i = 0; i < octaves; i++) {
+        value += amplitude * smooth_noise(u, v, frequency * 4.0f);
+        max_val += amplitude;
+        frequency *= lacunarity;
+        amplitude *= gain;
+    }
+    return value / max_val;
+}
+
+/* ── Rich procedural sky: atmospheric scattering, clouds, sun, distant lights ── */
+static Vec3 sky_color(Ray *ray) {
+    Vec3 dir = v3_norm(ray->dir);
+    float t = 0.5f * (dir.y + 1.0f);  /* 0 = nadir, 1 = zenith */
+
+    /* ── Atmospheric scattering gradient ──
+     * Ground: warm brown/tan → near-horizon: golden → mid-sky: blue → zenith: deep blue */
+    Vec3 ground_color  = v3(0.35f, 0.25f, 0.18f);
+    Vec3 glow_color    = v3(0.95f, 0.72f, 0.38f);  /* golden horizon glow */
+    Vec3 sky_mid       = v3(0.38f, 0.55f, 0.92f);
+    Vec3 zenith_color  = v3(0.15f, 0.25f, 0.72f);
+
     Vec3 sky;
-    if (t > 0.5f) {
-        sky = v3_lerp(horizon, zenith, (t - 0.5f) * 2.0f);
+    if (t < 0.22f) {
+        sky = v3_lerp(ground_color, glow_color, t / 0.22f);
+    } else if (t < 0.58f) {
+        sky = v3_lerp(glow_color, sky_mid, (t - 0.22f) / 0.36f);
     } else {
-        sky = v3_lerp(ground, horizon, t * 2.0f);
+        sky = v3_lerp(sky_mid, zenith_color, (t - 0.58f) / 0.42f);
+    }
+
+    /* ── Procedural clouds (FBM noise) ── */
+    float cloud_noise = fbm(dir, 5, 2.3f, 0.55f);
+    /* Remap: flatten the bottom, sharpen the top */
+    float cloud = (cloud_noise - 0.38f) * 3.0f;
+    cloud = clampf(cloud, 0.0f, 1.0f);
+    /* More clouds at mid-altitudes, fewer overhead */
+    float cloud_mask = 1.0f - fabsf(t - 0.45f) * 2.5f;
+    cloud_mask = clampf(cloud_mask, 0.1f, 1.0f);
+    cloud *= cloud_mask;
+
+    /* Cloud lighting: brighter where sun would hit them, darker underneath */
+    Vec3 sun_dir = v3_norm(v3(0.50f, 0.58f, 0.48f));
+    float sun_facing = v3_dot(dir, sun_dir);
+    Vec3 cloud_light = v3(0.95f, 0.92f, 0.85f);
+    Vec3 cloud_dark  = v3(0.60f, 0.56f, 0.52f);
+    Vec3 cloud_color = v3_lerp(cloud_dark, cloud_light, clampf(sun_facing * 0.7f + 0.5f, 0.0f, 1.0f));
+    sky = v3_lerp(sky, cloud_color, cloud * 0.55f);
+
+    /* ── Sun disk and glow ── */
+    float sun_dot = v3_dot(dir, sun_dir);
+
+    /* Wide atmospheric glow around sun (Mie scattering) */
+    if (sun_dot > 0.92f) {
+        float g = (sun_dot - 0.92f) / 0.08f;
+        g = g * g * (3.0f - 2.0f * g);  /* smoothstep */
+        Vec3 mie_glow = v3(1.6f, 1.2f, 0.75f);
+        sky = v3_lerp(sky, mie_glow, g * 0.55f);
+    }
+
+    /* Tight glow ring */
+    if (sun_dot > 0.97f) {
+        float g = (sun_dot - 0.97f) / 0.03f;
+        g = g * g * (3.0f - 2.0f * g);  /* smoothstep */
+        Vec3 tight_glow = v3(2.2f, 1.7f, 1.1f);
+        sky = v3_lerp(sky, tight_glow, g * 0.5f);
     }
 
     /* Sun disk */
-    Vec3 sun_dir = v3_norm(v3(0.55f, 0.65f, 0.52f));
-    float sun_dot = v3_dot(unit, sun_dir);
-    if (sun_dot > 0.999f) {
-        float s = (sun_dot - 0.999f) / 0.001f;  /* sharp falloff */
-        Vec3 sun_glow = v3(12.0f, 10.0f, 7.0f);
-        sky = v3_lerp(sky, sun_glow, s * s);
+    if (sun_dot > 0.9993f) {
+        float s = (sun_dot - 0.9993f) / 0.0007f;
+        s = clampf(s, 0.0f, 1.0f);
+        Vec3 sun = v3(6.0f, 4.5f, 3.0f);
+        sky = v3_lerp(sky, sun, s * s);
     }
 
-    /* Wide glow around sun */
-    if (sun_dot > 0.94f) {
-        float g = (sun_dot - 0.94f) / 0.06f;
-        Vec3 glow = v3(1.5f, 1.3f, 0.9f);
-        sky = v3_lerp(sky, glow, g * g * 0.6f);
+    /* ── Secondary colored lights for interesting reflections ── */
+    Vec3 light1_dir = v3_norm(v3(-0.40f, 0.30f, -0.25f));
+    Vec3 light2_dir = v3_norm(v3(0.60f, 0.15f, -0.35f));
+    float l1_dot = v3_dot(dir, light1_dir);
+    float l2_dot = v3_dot(dir, light2_dir);
+
+    /* Warm orange point (like a distant sunset reflection) */
+    if (l1_dot > 0.92f) {
+        float g = (l1_dot - 0.92f) / 0.08f;
+        g = g * g * (3.0f - 2.0f * g);
+        Vec3 warm_light = v3(1.2f, 0.6f, 0.22f);
+        sky = v3_lerp(sky, warm_light, g * 0.22f);
     }
+
+    /* Cool blue point */
+    if (l2_dot > 0.90f) {
+        float g = (l2_dot - 0.90f) / 0.10f;
+        g = g * g * (3.0f - 2.0f * g);
+        Vec3 cool_light = v3(0.2f, 0.4f, 1.0f);
+        sky = v3_lerp(sky, cool_light, g * 0.18f);
+    }
+
+    /* ── Keep sky values non-negative ── */
+    sky.x = maxf(sky.x, 0.0f);
+    sky.y = maxf(sky.y, 0.0f);
+    sky.z = maxf(sky.z, 0.0f);
 
     return sky;
 }
@@ -515,7 +670,9 @@ static Vec3 trace(Ray *ray, unsigned int *seed, int depth) {
     Material *mat = &g_materials[hit.mat_id];
 
     if (mat->type == MAT_EMISSIVE) {
-        return mat->emission;
+        return v3(maxf(mat->emission.x, 0.0f),
+                  maxf(mat->emission.y, 0.0f),
+                  maxf(mat->emission.z, 0.0f));
     }
 
     if (depth > RR_DEPTH) {
@@ -664,6 +821,11 @@ void render(int samples_per_pixel) {
                 Vec3 c = trace(&ray, &seed, 0);
                 color = v3_add(color, c);
             }
+
+            /* Clamp extreme values to prevent NaN/inf propagation */
+            color.x = clampf(color.x, 0.0f, 1000.0f);
+            color.y = clampf(color.y, 0.0f, 1000.0f);
+            color.z = clampf(color.z, 0.0f, 1000.0f);
 
             color = v3_mul(color, 1.0f / (float)samples_per_pixel);
 

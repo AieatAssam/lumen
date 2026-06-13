@@ -25,7 +25,7 @@ function applyBloom(src: ImageData, dst: CanvasRenderingContext2D, bloomCanvas: 
   bloomCanvas.height = h;
   const bctx = bloomCanvas.getContext('2d')!;
 
-  // 1. Extract bright pixels (threshold > 0.7)
+  // 1. Extract bright pixels (threshold > 0.75 for less bloom)
   const bright = bctx.createImageData(w, h);
   const srcData = src.data;
   const brightData = bright.data;
@@ -34,7 +34,7 @@ function applyBloom(src: ImageData, dst: CanvasRenderingContext2D, bloomCanvas: 
     const g = srcData[i + 1] / 255;
     const b = srcData[i + 2] / 255;
     const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    const t = lum > 0.55 ? (lum - 0.55) / 0.45 : 0; // soft threshold
+    const t = lum > 0.70 ? (lum - 0.70) / 0.30 : 0; // higher threshold
     brightData[i] = srcData[i] * t;
     brightData[i + 1] = srcData[i + 1] * t;
     brightData[i + 2] = srcData[i + 2] * t;
@@ -42,20 +42,18 @@ function applyBloom(src: ImageData, dst: CanvasRenderingContext2D, bloomCanvas: 
   }
   bctx.putImageData(bright, 0, 0);
 
-  // 2. Apply 3-pass box blur at increasing radii (cheap gaussian approximation)
+  // 2. Apply 2-pass blur at smaller radii
   bctx.globalCompositeOperation = 'source-over';
-  bctx.filter = 'blur(8px)';
+  bctx.filter = 'blur(6px)';
   bctx.drawImage(bloomCanvas, 0, 0);
-  bctx.filter = 'blur(16px)';
-  bctx.drawImage(bloomCanvas, 0, 0);
-  bctx.filter = 'blur(24px)';
+  bctx.filter = 'blur(14px)';
   bctx.drawImage(bloomCanvas, 0, 0);
   bctx.filter = 'none';
 
-  // 3. Composite bloom over original (screen blend)
+  // 3. Composite bloom over original (lighter blend, reduced strength)
   dst.putImageData(src, 0, 0);
   dst.globalCompositeOperation = 'lighter';
-  dst.globalAlpha = 0.5;
+  dst.globalAlpha = 0.30;
   dst.drawImage(bloomCanvas, 0, 0);
   dst.globalCompositeOperation = 'source-over';
   dst.globalAlpha = 1.0;
