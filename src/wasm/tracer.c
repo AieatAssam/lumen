@@ -507,9 +507,10 @@ static void setup_checkerboard(void) {
 /* ── Scene 5: Cosmic — floating gemstones in deep space ── */
 static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
-     * A huge dark sphere far behind blocks the daytime procedural sky.
-     * Front surface at z=-10 — all scene objects must be at z > -8. */
-    int void_mat   = add_material(v3(0.003,0.002,0.012), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+     * Self-luminous faint nebula. Without explicit light sampling in the path tracer,
+     * tiny stars are near-impossible to hit randomly. A dimly emissive sky dome provides
+     * ambient fill so spheres aren't invisible — think cosmic background glow. */
+    int void_mat   = add_material(v3(0,0,0), v3(0.006,0.004,0.020), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, -500), 490.0f, void_mat);
 
     /* Glass orbs — dark but visible tints for night */
@@ -542,10 +543,10 @@ static void setup_cosmic(void) {
     int core_warm  = add_material(v3(0.45,0.30,0.08), v3(2,0.8,0.08), 0, 1, MAT_EMISSIVE);
 
     /* Moons — bright celestial bodies that light the scene */
-    int moon       = add_material(v3(0.90,0.87,0.80), v3(6,5,4), 0, 1, MAT_EMISSIVE);
-    int moon2      = add_material(v3(0.75,0.78,0.90), v3(3,4,7), 0, 1, MAT_EMISSIVE);
-    add_sphere(v3(6, 5, -22), 1.8f, moon);
-    add_sphere(v3(-5, 3, -20), 1.3f, moon2);
+    int moon       = add_material(v3(0.92,0.89,0.82), v3(12,10,7), 0, 1, MAT_EMISSIVE);
+    int moon2      = add_material(v3(0.75,0.78,0.92), v3(5,7,12), 0, 1, MAT_EMISSIVE);
+    add_sphere(v3(6, 5, -22), 2.0f, moon);
+    add_sphere(v3(-5, 3, -20), 1.5f, moon2);
 
     /* Stars — all placed IN FRONT of backdrop (z > -6) */
     unsigned int rng = 137;
