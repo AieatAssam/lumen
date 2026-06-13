@@ -84,6 +84,23 @@ emcc src/wasm/tracer.c -O3 \
   -o public/tracer.js
 ```
 
+
+## HDRI Environment Maps
+
+All environment maps are from [Poly Haven](https://polyhaven.com) and are licensed under
+[CC0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain — no rights reserved).
+
+| Map | Source |
+|-----|--------|
+| ☀️ Clear Sky | [Kloofendal Partly Cloudy](https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky) |
+| 🌙 Starry Night | [Rogland Clear Night](https://polyhaven.com/a/rogland_clear_night) |
+| 🌅 Venice Sunset | [Venice Sunset](https://polyhaven.com/a/venice_sunset) |
+| 🏠 Studio Hall | [Studio Apartment](https://polyhaven.com/a/studio_small_07) |
+| 🏭 Industrial | [Industrial Sunset](https://polyhaven.com/a/industrial_sunset) |
+| ❄️ Snow Field | [Snowy Field](https://polyhaven.com/a/snowy_field) |
+| 🌥️ Overcast | [Overcast Sky](https://polyhaven.com/a/overcast) |
+| 🛣️ Evening Road | [Sunset Field](https://polyhaven.com/a/sunset_field) |
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.

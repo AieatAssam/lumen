@@ -1,3 +1,6 @@
-node_modules
-dist
-*.local
+1|node_modules
+2|dist
+3|*.local
+4|
+# Poly Haven HDRI source files (large) — keep only downsampled .bin files
+public/hdri/

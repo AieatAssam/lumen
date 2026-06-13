@@ -5,12 +5,24 @@ import { Stats } from './components/Stats';
 import { Sparkles, Code, RotateCw, ZoomIn, ZoomOut, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const SCENES = [
-  { id: 0, name: 'Cornell Box', desc: 'Classic test scene — diffuse walls, metal, and glass' },
-  { id: 1, name: 'Metal Spheres', desc: 'Specular and rough metal spheres under sunlight' },
-  { id: 2, name: 'Glass & Light', desc: 'Dielectric glass with Fresnel refraction and caustics' },
-  { id: 3, name: 'Random Spheres', desc: 'Procedural field of colored spheres with a glass centerpiece' },
-  { id: 4, name: 'Checkerboard', desc: 'Patterned floor with metallic columns and gold sphere' },
-  { id: 5, name: 'Cosmic', desc: 'Abstract floating orbs illuminated by colored lights' },
+  { id: 0, name: 'Cornell Box', desc: 'Sapphire, emerald, amber, diamond, copper & brushed metal — all three material types on display' },
+  { id: 1, name: 'Metal Spheres', desc: 'Mirror → brushed → rough metal plus ruby & aqua glass under procedural sky' },
+  { id: 2, name: 'Glass & Light', desc: 'Five dielectrics (glass, diamond, crystal, amber, amethyst) with metal accents' },
+  { id: 3, name: 'Random Spheres', desc: 'Procedural field: 50/50 metal/dielectric split with a center diamond' },
+  { id: 4, name: 'Checkerboard', desc: 'Metal & glass columns, row of gemstones (ruby/diamond/emerald/sapphire)' },
+  { id: 5, name: 'Cosmic', desc: '200 stars, 10 nebula clouds, 8 floating orbs — ice, coral, emerald, diamond, gold' },
+] as const;
+
+const ENV_MAPS = [
+  { id: -1, name: '☁️ Procedural', file: null, desc: 'Generated sky with clouds' },
+  { id: 0, name: '☀️ Clear Sky', file: 'kloofendal_1k.bin', desc: 'Midday partly cloudy sky — Poly Haven (CC0)' },
+  { id: 1, name: '🌙 Starry Night', file: 'rogland_night_1k.bin', desc: 'Milky Way night sky — Poly Haven (CC0)' },
+  { id: 2, name: '🌅 Venice Sunset', file: 'venice_sunset_1k.bin', desc: 'Golden hour over water — Poly Haven (CC0)' },
+  { id: 3, name: '🏠 Studio Hall', file: 'studio_1k.bin', desc: 'Indoor hall with chandeliers — Poly Haven (CC0)' },
+  { id: 4, name: '🏭 Industrial', file: 'industrial_sunset_1k.bin', desc: 'Sunset behind factories — Poly Haven (CC0)' },
+  { id: 5, name: '❄️ Snow Field', file: 'snowy_field_1k.bin', desc: 'Snowy landscape under overcast sky — Poly Haven (CC0)' },
+  { id: 6, name: '🌥️ Overcast', file: 'overcast_1k.bin', desc: 'Cloudy sky over green hills — Poly Haven (CC0)' },
+  { id: 7, name: '🛣️ Evening Road', file: 'sunset_field_1k.bin', desc: 'Country road at dusk — Poly Haven (CC0)' },
 ] as const;
 
 const CANVAS_W = 640;
@@ -67,6 +79,8 @@ export default function App() {
   const [renderTime, setRenderTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [wasmReady, setWasmReady] = useState(false);
+  const [envMapId, setEnvMapId] = useState(-1);  // -1 = procedural sky
+  const [envMapLoading, setEnvMapLoading] = useState(false);
 
   // Camera orbit state
   const [distance, setDistance] = useState(5.0);
@@ -237,6 +251,41 @@ export default function App() {
 
   const handlePause = useCallback(() => stopPump(), [stopPump]);
   const handleSceneChange = useCallback((id: number) => setSceneId(id), []);
+  const handleEnvMapChange = useCallback((id: number) => {
+    setEnvMapId(id);
+    const worker = workerRef.current;
+    if (!worker) return;
+    if (id < 0) {
+      // Procedural sky
+      worker.postMessage({ type: 'setUseEnvMap', use: false });
+      return;
+    }
+    const map = ENV_MAPS.find(m => m.id === id);
+    if (!map || !map.file) return;
+    setEnvMapLoading(true);
+    const baseUrl = import.meta.env.BASE_URL;
+    fetch(baseUrl + 'hdri_128x64/' + map.file)
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.arrayBuffer();
+      })
+      .then(buf => {
+        const floats = new Float32Array(buf);
+        worker.postMessage({
+          type: 'loadEnvMap',
+          data: floats,
+          width: 128,
+          height: 64,
+        }, [floats.buffer]); // transfer ownership for speed
+        worker.postMessage({ type: 'setUseEnvMap', use: true });
+        setEnvMapLoading(false);
+      })
+      .catch(err => {
+        setError('Failed to load env map: ' + err.message);
+        setEnvMapLoading(false);
+        setEnvMapId(-1);
+      });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -275,6 +324,34 @@ export default function App() {
       <main className="mx-auto max-w-5xl space-y-4 sm:space-y-6 px-3 sm:px-6 py-4 sm:py-8">
         {/* Scene picker — horizontal scroll on mobile */}
         <ScenePicker scenes={[...SCENES]} activeId={sceneId} onChange={handleSceneChange} disabled={rendering} />
+
+        {/* Env map picker */}
+        <div className="rounded-xl border border-border/30 bg-card/50 p-3 sm:p-4">
+          <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-foreground">
+            🌍 Background Environment
+            {envMapLoading && <span className="ml-2 text-primary/60 animate-pulse">Loading…</span>}
+          </h3>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            {ENV_MAPS.map(env => (
+              <button
+                key={env.id}
+                onClick={() => handleEnvMapChange(env.id)}
+                disabled={rendering || envMapLoading}
+                className={`rounded-lg border px-2.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium transition-all min-h-[36px]
+                  ${envMapId === env.id
+                    ? 'border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20'
+                    : 'border-border/50 bg-card/50 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={env.desc}
+              >
+                {env.name}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-muted-foreground/60">
+            All HDRIs from <a href="https://polyhaven.com" target="_blank" rel="noopener noreferrer" className="underline">Poly Haven</a> (CC0 — no rights reserved)
+          </p>
+        </div>
 
         {error && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-destructive">{error}</div>

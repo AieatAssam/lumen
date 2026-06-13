@@ -111,6 +111,21 @@ self.onmessage = function(e) {
       case 'destroy':
         if (wasmReady) { Module._destroy(); wasmReady = false; }
         break;
+      case 'loadEnvMap':
+        if (!wasmReady) return;
+        // Allocate WASM memory, copy float data, call load_env_map
+        var floats = msg.data; // Float32Array
+        var nbytes = floats.length * 4;
+        var ptr = Module._malloc(nbytes);
+        var heap = new Float32Array(HEAPU8.buffer, ptr, floats.length);
+        heap.set(floats);
+        Module._load_env_map(ptr, msg.width, msg.height);
+        Module._free(ptr);
+        break;
+      case 'setUseEnvMap':
+        if (!wasmReady) return;
+        Module._set_use_env_map(msg.use ? 1 : 0);
+        break;
     }
   } catch (err) {
     self.postMessage({ type: 'error', message: 'Handler error: ' + (err.message || err) });
