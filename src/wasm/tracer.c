@@ -507,67 +507,70 @@ static void setup_checkerboard(void) {
 /* ── Scene 5: Cosmic — floating gemstones in deep space ── */
 static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
-     * A huge dark sphere behind everything blocks the daytime procedural sky.
-     * Rays that escape the scene hit near-black instead of blue sky. */
-    int void_mat   = add_material(v3(0.002,0.001,0.008), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int void_dim   = add_material(v3(0.004,0.003,0.012), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    add_sphere(v3(0, 0, -120), 110.0f, void_mat);
+     * A huge dark sphere far behind blocks the daytime procedural sky.
+     * Front surface at z=-10 — all scene objects must be at z > -8. */
+    int void_mat   = add_material(v3(0.003,0.002,0.012), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    add_sphere(v3(0, 0, -500), 490.0f, void_mat);
 
-    /* Glass orbs — darker, more mysterious tints for night */
-    int orb_ice    = add_material(v3(0.18,0.22,0.35), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
-    int orb_coral  = add_material(v3(0.30,0.10,0.14), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
-    int orb_emerald= add_material(v3(0.04,0.28,0.08), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
-    int orb_amber  = add_material(v3(0.28,0.14,0.04), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
-    int orb_ameth  = add_material(v3(0.18,0.06,0.28), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
-    int orb_diamond= add_material(v3(0.30,0.30,0.30), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
+    /* Glass orbs — dark but visible tints for night */
+    int orb_ice    = add_material(v3(0.35,0.42,0.65), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
+    int orb_coral  = add_material(v3(0.55,0.18,0.25), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
+    int orb_emerald= add_material(v3(0.10,0.50,0.18), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int orb_amber  = add_material(v3(0.50,0.28,0.08), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
+    int orb_ameth  = add_material(v3(0.35,0.14,0.50), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int orb_diamond= add_material(v3(0.55,0.55,0.55), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
     /* Rough metals that catch faint starlight */
-    int obsidian   = add_material(v3(0.05,0.04,0.10), v3(0,0,0), 0.06f, 1, MAT_METAL);
-    int dark_iron  = add_material(v3(0.08,0.08,0.10), v3(0,0,0), 0.30f, 1, MAT_METAL);
+    int obsidian   = add_material(v3(0.10,0.08,0.18), v3(0,0,0), 0.06f, 1, MAT_METAL);
+    int dark_iron  = add_material(v3(0.15,0.15,0.18), v3(0,0,0), 0.30f, 1, MAT_METAL);
 
-    /* Stars — tiny distant emitters, just hints of color */
-    int star_warm  = add_material(v3(1.0,0.85,0.6), v3(1.2,0.5,0.15), 0, 1, MAT_EMISSIVE);
-    int star_cool  = add_material(v3(0.7,0.8,1.0), v3(0.3,0.6,2.0), 0, 1, MAT_EMISSIVE);
-    int star_red   = add_material(v3(1.0,0.3,0.2), v3(0.8,0.1,0.05), 0, 1, MAT_EMISSIVE);
-    int star_blue  = add_material(v3(0.2,0.4,1.0), v3(0.1,0.2,1.5), 0, 1, MAT_EMISSIVE);
+    /* Stars — brighter so recursive rays can actually find them */
+    int star_warm  = add_material(v3(1.0,0.85,0.6), v3(4,1.5,0.4), 0, 1, MAT_EMISSIVE);
+    int star_cool  = add_material(v3(0.7,0.8,1.0), v3(0.8,2,6), 0, 1, MAT_EMISSIVE);
+    int star_red   = add_material(v3(1.0,0.3,0.2), v3(3,0.3,0.1), 0, 1, MAT_EMISSIVE);
+    int star_blue  = add_material(v3(0.2,0.4,1.0), v3(0.3,0.6,5), 0, 1, MAT_EMISSIVE);
 
-    /* Distant nebula — very faint, barely visible */
-    int nebula     = add_material(v3(0.08,0.04,0.18), v3(0.03,0.01,0.08), 0, 1, MAT_EMISSIVE);
-    int nebula2    = add_material(v3(0.04,0.08,0.06), v3(0.01,0.04,0.02), 0, 1, MAT_EMISSIVE);
+    /* Distant nebula — faint haze */
+    int nebula     = add_material(v3(0.06,0.03,0.14), v3(0.02,0.01,0.06), 0, 1, MAT_EMISSIVE);
+    int nebula2    = add_material(v3(0.03,0.06,0.04), v3(0.01,0.03,0.01), 0, 1, MAT_EMISSIVE);
 
-    /* Ground — dark asteroid surface, barely lit */
-    int ground     = add_material(v3(0.01,0.01,0.015), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    int ground2    = add_material(v3(0.015,0.015,0.025), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    /* Ground — dark asteroid surface */
+    int ground     = add_material(v3(0.015,0.015,0.025), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
+    int ground2    = add_material(v3(0.025,0.025,0.040), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
 
-    /* Nested cores — faint inner glow for glass marbles */
-    int core_green = add_material(v3(0.06,0.35,0.10), v3(0.05,0.8,0.1), 0, 1, MAT_EMISSIVE);
-    int core_warm  = add_material(v3(0.35,0.25,0.06), v3(0.8,0.3,0.03), 0, 1, MAT_EMISSIVE);
+    /* Nested cores — brighter inner glow */
+    int core_green = add_material(v3(0.08,0.45,0.12), v3(0.15,2,0.3), 0, 1, MAT_EMISSIVE);
+    int core_warm  = add_material(v3(0.45,0.30,0.08), v3(2,0.8,0.08), 0, 1, MAT_EMISSIVE);
 
-    /* Distant moon — single bright celestial body */
-    int moon       = add_material(v3(0.85,0.82,0.75), v3(1.2,1.1,0.9), 0, 1, MAT_EMISSIVE);
-    add_sphere(v3(8, 7, -25), 1.0f, moon);
+    /* Moons — bright celestial bodies that light the scene */
+    int moon       = add_material(v3(0.90,0.87,0.80), v3(6,5,4), 0, 1, MAT_EMISSIVE);
+    int moon2      = add_material(v3(0.75,0.78,0.90), v3(3,4,7), 0, 1, MAT_EMISSIVE);
+    add_sphere(v3(6, 5, -22), 1.8f, moon);
+    add_sphere(v3(-5, 3, -20), 1.3f, moon2);
 
-    /* Stars scattered on a deep-space sphere */
+    /* Stars — all placed IN FRONT of backdrop (z > -6) */
     unsigned int rng = 137;
     int star_mats[] = { star_warm, star_cool, star_red, star_blue, star_cool, star_warm };
-    for (int i = 0; i < 300; i++) {
+    for (int i = 0; i < 250; i++) {
         float theta = 2.0f * PI * randf(&rng);
+        /* Phi restricted so stars are above ground and in front of backdrop */
         float phi = acosf(2.0f * randf(&rng) - 1.0f);
-        float sr = 8.0f + randf(&rng) * 20.0f;
+        float sr = 6.0f + randf(&rng) * 16.0f;
         float sx = sr * sinf(phi) * cosf(theta);
         float sy = sr * sinf(phi) * sinf(theta);
-        float sz = sr * cosf(phi) - 2.0f;
-        /* Only place stars in the upper/back hemisphere (not below ground) */
-        if (sy < -1.5f) continue;
-        float size = 0.03f + randf(&rng) * 0.10f;
+        float sz = sr * cosf(phi) - 1.0f;
+        /* Discard: below ground or behind backdrop front surface (z < -6) */
+        if (sy < -1.0f || sz < -6.0f) continue;
+        float size = 0.06f + randf(&rng) * 0.20f;
         int smat = star_mats[(int)(randf(&rng) * 6)];
         add_sphere(v3(sx, sy, sz), size, smat);
     }
 
-    /* Nebula clouds — few, faint, far */
+    /* Nebula clouds — few, faint, in front of backdrop */
     for (int i = 0; i < 5; i++) {
-        float nx = (randf(&rng) - 0.5f) * 18.0f;
-        float ny = (randf(&rng) - 0.5f) * 10.0f + 2.0f;
-        float nz = -8.0f + (randf(&rng) - 0.5f) * 16.0f;
+        float nx = (randf(&rng) - 0.5f) * 16.0f;
+        float ny = (randf(&rng) - 0.5f) * 8.0f + 2.0f;
+        float nz = -7.0f + (randf(&rng) - 0.5f) * 12.0f;
+        if (nz < -6.0f) nz = -5.0f;
         int nm = (i & 1) ? nebula : nebula2;
         add_sphere(v3(nx, ny, nz), 0.8f + randf(&rng) * 2.0f, nm);
     }
@@ -580,10 +583,10 @@ static void setup_cosmic(void) {
         }
     }
 
-    /* Orb formation — dark glass, rough metal accents */
+    /* Orb formation — colored glass, rough metal accents */
     add_sphere(v3(-2.2f, 0.8f, -2.2f), 0.9f, orb_ice);     /* top-left: ice glass */
     add_sphere(v3(2.0f,  0.5f, -1.8f), 0.75f, orb_coral);  /* top-right: coral */
-    /* Nested: emerald shell + faint green core */
+    /* Nested: emerald shell + green core */
     add_sphere(v3(0.5f,  0.0f, -3.0f), 0.65f, orb_emerald);
     add_sphere(v3(0.5f,  0.0f, -3.0f), 0.22f, core_green);
     add_sphere(v3(-1.6f, 0.3f, -3.8f), 0.45f, obsidian);   /* mid-left: dark shiny */
