@@ -507,11 +507,11 @@ static void setup_checkerboard(void) {
 /* ── Scene 5: Cosmic — floating gemstones in deep space ── */
 static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
-     * Self-luminous faint nebula. Without explicit light sampling in the path tracer,
-     * tiny stars are near-impossible to hit randomly. A dimly emissive sky dome provides
-     * ambient fill so spheres aren't invisible — think cosmic background glow. */
-    int void_mat   = add_material(v3(0,0,0), v3(0.04,0.03,0.12), 0, 1, MAT_EMISSIVE);
-    add_sphere(v3(0, 0, -500), 490.0f, void_mat);
+     * Centered at origin, R=100 encloses camera and all scene objects.
+     * Every ray that misses scene geometry hits this self-luminous dome.
+     * Emission provides ambient night-sky fill — cosmic background glow. */
+    int void_mat   = add_material(v3(0,0,0), v3(0.03,0.02,0.10), 0, 1, MAT_EMISSIVE);
+    add_sphere(v3(0, 0, 0), 100.0f, void_mat);
 
     /* Glass orbs — dark but visible tints for night */
     int orb_ice    = add_material(v3(0.35,0.42,0.65), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
