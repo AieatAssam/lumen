@@ -280,9 +280,9 @@ static void setup_metal_spheres(void) {
     add_sphere(v3(1.2f,  0.35f, 0.2f), 0.42f, ruby);   /* deep red glass */
     add_sphere(v3(2.5f,  0.30f, -0.5f), 0.38f, aqua);  /* teal glass */
 
-    /* Nested sphere: clear glass shell + warm core — left side */
-    add_sphere(v3(-1.8f, 0.50f, -0.3f), 0.48f, glass);
-    add_sphere(v3(-1.8f, 0.50f, -0.3f), 0.20f, core_warm);
+    /* Nested sphere: clear glass shell + warm core — far left */
+    add_sphere(v3(-2.5f, 0.50f, -0.3f), 0.48f, glass);
+    add_sphere(v3(-2.5f, 0.50f, -0.3f), 0.20f, core_warm);
 
     /* Distant fill lights */
     add_sphere(v3(-8, 10, 6), 0.8f, fill);
@@ -313,9 +313,10 @@ static void setup_glass_light(void) {
     int red     = add_material(v3(0.85,0.12,0.12), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int blue    = add_material(v3(0.12,0.18,0.88), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
     int yellow  = add_material(v3(0.90,0.85,0.10), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);
-    /* Lighting */
-    int light   = add_material(v3(1,1,0.95), v3(1.5,1.5,1), 0, 1, MAT_EMISSIVE);
-    int warm_light = add_material(v3(1,0.85,0.6), v3(2.5,1.5,0.5), 0, 1, MAT_EMISSIVE);
+    /* Lighting — subtle so env maps provide primary illumination */
+    int light       = add_material(v3(1,0.95,0.85), v3(0.6,0.5,0.3), 0, 1, MAT_EMISSIVE);
+    int warm_light  = add_material(v3(1,0.90,0.7), v3(0.8,0.5,0.2), 0, 1, MAT_EMISSIVE);
+    int rim_light   = add_material(v3(0.6,0.7,1.0), v3(0.4,0.6,1.2), 0, 1, MAT_EMISSIVE);
     /* Nested cores */
     int core_warm = add_material(v3(1.0,0.85,0.3), v3(3,2,0.3), 0, 1, MAT_EMISSIVE);
     int core_cool = add_material(v3(0.3,0.5,1.0), v3(0.5,2,5), 0, 1, MAT_EMISSIVE);
@@ -330,7 +331,7 @@ static void setup_glass_light(void) {
 
     /* Main glass showcase — 5 dielectrics + 2 nested pairs */
     add_sphere(v3(-2.5f, 0.8f, -1.8f), 0.9f, glass);     /* clear glass */
-    add_sphere(v3(-1.2f, 0.7f, -2.5f), 0.8f, diamond);   /* high-IOR sparkle */
+    add_sphere(v3(-1.0f, 0.7f, -3.2f), 0.8f, diamond);   /* high-IOR — spaced clear of glass */
     /* Nested: clear glass shell with warm glow inside */
     add_sphere(v3(0.0f,  0.6f, -1.2f), 0.7f, glass);
     add_sphere(v3(0.0f,  0.6f, -1.2f), 0.25f, core_warm);
@@ -339,6 +340,9 @@ static void setup_glass_light(void) {
     add_sphere(v3(2.8f,  0.4f, -1.2f), 0.6f, amethyst);
     add_sphere(v3(2.8f,  0.4f, -1.2f), 0.22f, core_cool);
 
+    /* Crystal accent — back-left corner */
+    add_sphere(v3(-0.3f, 0.55f, -3.5f), 0.45f, crystal);
+
     /* Metal and diffuse accents scattered about */
     add_sphere(v3(-0.6f, 0.3f, 0.1f), 0.35f, metal);     /* polished metal */
     add_sphere(v3(1.0f,  0.25f, 0.3f), 0.3f, gold);      /* gold accent */
@@ -346,9 +350,10 @@ static void setup_glass_light(void) {
     add_sphere(v3(0.3f,  0.2f, -3.0f), 0.25f, blue);     /* blue accent */
     add_sphere(v3(-0.8f, 0.2f, -3.2f), 0.22f, yellow);   /* yellow accent */
 
-    /* Light sources */
-    add_sphere(v3(8, 12, 8), 0.3f, light);
-    add_sphere(v3(-6, 9, 5), 0.25f, warm_light);
+    /* Subtle light sources — warm overhead, blue rim, warm fill */
+    add_sphere(v3(6, 10, 6), 0.3f, light);
+    add_sphere(v3(-5, 7, 5), 0.3f, warm_light);
+    add_sphere(v3(2, 4, -5), 0.35f, rim_light);
 
     g_camera.eye = v3(0, 1.5f, 4.0f);
     g_camera.lookat = v3(0, 0.5f, -1.2f);
