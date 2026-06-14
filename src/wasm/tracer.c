@@ -106,6 +106,7 @@ static unsigned char *g_output = NULL;
 static Sphere *g_spheres = NULL;
 static Material *g_materials = NULL;
 static int g_num_spheres = 0;
+static int g_cosmic_backdrop_idx = -1;  /* sphere index of Cosmic backdrop, skipped when HDRI active */
 static int g_num_materials = 0;
 static Camera g_camera;
 static int g_scene_id = 0;
@@ -130,6 +131,7 @@ static void free_scene(void) {
     if (g_materials) { free(g_materials); g_materials = NULL; }
     g_num_spheres = 0;
     g_num_materials = 0;
+    g_cosmic_backdrop_idx = -1;
     /* Don't free g_env_map here — it's managed separately via load_env_map */
 }
 
@@ -513,6 +515,7 @@ static void setup_cosmic(void) {
      * at each bounce. At (0.10, 0.06, 0.25) it reads as a dark night sky. */
     int void_mat   = add_material(v3(0,0,0), v3(0.10,0.06,0.25), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, 0), 100.0f, void_mat);
+    g_cosmic_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
 
     /* Glass orbs — lighter albeo so they reflect/refract the night glow */
     int orb_ice    = add_material(v3(0.55,0.65,0.90), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
@@ -615,6 +618,8 @@ static int intersect(Ray *ray, Hit *hit) {
     hit->mat_id = -1;
 
     for (int i = 0; i < g_num_spheres; i++) {
+        /* Skip Cosmic backdrop when HDRI env map is active — HDRI provides the background */
+        if (g_use_env_map && i == g_cosmic_backdrop_idx) continue;
         Sphere *s = &g_spheres[i];
         Vec3 oc = v3_sub(ray->origin, s->center);
         float a = v3_dot(ray->dir, ray->dir);
