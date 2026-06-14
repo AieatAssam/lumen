@@ -511,9 +511,8 @@ static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
      * Centered at origin, R=100 encloses camera and all scene objects.
      * Every ray that misses scene geometry hits this self-luminous dome.
-     * Emission must be HIGH because it's attenuated by material albedos
-     * at each bounce. At (0.10, 0.06, 0.25) it reads as a dark night sky. */
-    int void_mat   = add_material(v3(0,0,0), v3(0.10,0.06,0.25), 0, 1, MAT_EMISSIVE);
+     * Kept nearly black — stars and moons are the only real light sources. */
+    int void_mat   = add_material(v3(0,0,0), v3(0.003,0.002,0.006), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, 0), 100.0f, void_mat);
     g_cosmic_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
 
