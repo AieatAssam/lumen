@@ -106,11 +106,11 @@ static unsigned char *g_output = NULL;
 static Sphere *g_spheres = NULL;
 static Material *g_materials = NULL;
 static int g_num_spheres = 0;
-static int g_cosmic_backdrop_idx = -1;  /* sphere index of Cosmic backdrop, skipped when HDRI active */
 static int g_num_materials = 0;
 static Camera g_camera;
 static int g_scene_id = 0;
 static int g_total_samples = 0;
+static int g_backdrop_idx = -1;  /* sphere index of backdrop dome, skipped when HDRI active */
 
 /* ── Environment map ── */
 static float *g_env_map = NULL;
@@ -130,8 +130,8 @@ static void free_scene(void) {
     if (g_spheres) { free(g_spheres); g_spheres = NULL; }
     if (g_materials) { free(g_materials); g_materials = NULL; }
     g_num_spheres = 0;
+    g_backdrop_idx = -1;
     g_num_materials = 0;
-    g_cosmic_backdrop_idx = -1;
     /* Don't free g_env_map here — it's managed separately via load_env_map */
 }
 
@@ -371,6 +371,11 @@ static void setup_glass_light(void) {
 
 /* ── Scene 3: Random Spheres — procedural field with rich material mix ── */
 static void setup_random_spheres(void) {
+    /* Ambient dome — soft blue-grey glow so spheres aren't black when occluded */
+    int void_mat   = add_material(v3(0,0,0), v3(0.04,0.04,0.06), 0, 1, MAT_EMISSIVE);
+    add_sphere(v3(0, 0, 0), 100.0f, void_mat);
+    g_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
+
     int colors[6];
     colors[0] = add_material(v3(0.95,0.15,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* red */
     colors[1] = add_material(v3(0.15,0.95,0.15), v3(0,0,0), 0, 1, MAT_LAMBERTIAN);  /* green */
@@ -402,13 +407,14 @@ static void setup_random_spheres(void) {
         }
     }
 
-    /* Random field — 40% metal, 30% glass, 30% diffuse */
+    /* Random field — 40% metal, 30% glass, 30% diffuse
+     * Spheres placed at y = r + 0.8 to sit ON TOP of the checker ground (ground R=0.8, y=-0.01) */
     unsigned int rng = 42;
     for (int i = 0; i < 55; i++) {
         float x = (randf(&rng) - 0.5f) * 8.0f;
         float z = (randf(&rng) - 0.5f) * 7.0f - 1.0f;
         float r = 0.12f + randf(&rng) * 0.40f;
-        float y = r;
+        float y = r + 0.8f;  /* sit on top of ground */
         int mat;
         float choice = randf(&rng);
         if (choice < 0.08f)      mat = chrome;
@@ -426,15 +432,15 @@ static void setup_random_spheres(void) {
     }
 
     /* Large center diamond — sparkle showcase */
-    add_sphere(v3(0, 0.9f, -1.6f), 0.85f, diamond);
+    add_sphere(v3(0, 1.7f, -1.6f), 0.85f, diamond);
 
-    /* Sun far above */
-    add_sphere(v3(8, 16, 12), 0.3f, sun);
+    /* Sun — large, close enough to light the field */
+    add_sphere(v3(5, 10, 6), 2.0f, sun);
 
-    g_camera.eye = v3(0, 2.2f, 5.0f);
-    g_camera.lookat = v3(0, 0.5f, -0.5f);
+    g_camera.eye = v3(0, 3.0f, 5.0f);
+    g_camera.lookat = v3(0, 1.2f, -0.5f);
     g_camera.up = v3(0, 1, 0);
-    g_camera.fov = 62.0f;
+    g_camera.fov = 55.0f;
     g_camera.aperture = 0.0f;
     g_camera.focus_dist = 5.0f;
 }
@@ -514,7 +520,7 @@ static void setup_cosmic(void) {
      * Subtle blue glow provides ambient light for the orbs to reflect. */
     int void_mat   = add_material(v3(0,0,0), v3(0.015,0.010,0.035), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, 0), 100.0f, void_mat);
-    g_cosmic_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
+    g_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
 
     /* Glass orbs — subtle, dark-tinted for deep space realism */
     int orb_ice    = add_material(v3(0.18,0.28,0.55), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
@@ -621,8 +627,8 @@ static int intersect(Ray *ray, Hit *hit) {
     hit->mat_id = -1;
 
     for (int i = 0; i < g_num_spheres; i++) {
-        /* Skip Cosmic backdrop when HDRI env map is active — HDRI provides the background */
-        if (g_use_env_map && i == g_cosmic_backdrop_idx) continue;
+        /* Skip backdrop dome when HDRI env map is active — HDRI provides the background */
+        if (g_use_env_map && i == g_backdrop_idx) continue;
         Sphere *s = &g_spheres[i];
         Vec3 oc = v3_sub(ray->origin, s->center);
         float a = v3_dot(ray->dir, ray->dir);
