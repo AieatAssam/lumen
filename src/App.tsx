@@ -10,7 +10,7 @@ const SCENES = [
   { id: 2, name: 'Glass & Light', desc: 'Two nested pairs (glass+warm, amethyst+cool), diamond, amber — dielectric playground' },
   { id: 3, name: 'Random Spheres', desc: 'Procedural field: 56% glass/metal (mirror, brass, diamond, ruby, emerald, amber), 44% diffuse' },
   { id: 4, name: 'Checkerboard', desc: '5 column types (metal+glass), 4 deeply tinted gemstones (ruby/diamond/emerald/sapphire)' },
-  { id: 5, name: 'Cosmic', desc: '200 stars, 10 nebulae, 2 nested orbs (emerald+green, diamond+warm), ice, coral, mirror' },
+  { id: 5, name: 'Cosmic', desc: '200 stars, 10 nebulae, 2 nested orbs (emerald+green, diamond+warm), ice, coral, polished metal' },
 ] as const;
 
 const ENV_MAPS = [

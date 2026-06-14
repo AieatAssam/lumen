@@ -511,21 +511,21 @@ static void setup_cosmic(void) {
     /* ── Deep-space backdrop ──
      * Centered at origin, R=100 encloses camera and all scene objects.
      * Every ray that misses scene geometry hits this self-luminous dome.
-     * Kept nearly black — stars and moons are the only real light sources. */
-    int void_mat   = add_material(v3(0,0,0), v3(0.003,0.002,0.006), 0, 1, MAT_EMISSIVE);
+     * Subtle blue glow provides ambient light for the orbs to reflect. */
+    int void_mat   = add_material(v3(0,0,0), v3(0.015,0.010,0.035), 0, 1, MAT_EMISSIVE);
     add_sphere(v3(0, 0, 0), 100.0f, void_mat);
     g_cosmic_backdrop_idx = g_num_spheres - 1;  /* track for HDRI skip */
 
-    /* Glass orbs — lighter albeo so they reflect/refract the night glow */
-    int orb_ice    = add_material(v3(0.55,0.65,0.90), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
-    int orb_coral  = add_material(v3(0.80,0.25,0.35), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
-    int orb_emerald= add_material(v3(0.18,0.70,0.28), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
-    int orb_amber  = add_material(v3(0.75,0.42,0.12), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
-    int orb_ameth  = add_material(v3(0.55,0.22,0.75), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
-    int orb_diamond= add_material(v3(0.80,0.80,0.80), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
-    /* Rough metals — lighter so they catch what little light exists */
-    int obsidian   = add_material(v3(0.18,0.14,0.30), v3(0,0,0), 0.06f, 1, MAT_METAL);
-    int dark_iron  = add_material(v3(0.25,0.25,0.30), v3(0,0,0), 0.30f, 1, MAT_METAL);
+    /* Glass orbs — subtle, dark-tinted for deep space realism */
+    int orb_ice    = add_material(v3(0.18,0.28,0.55), v3(0,0,0), 0, 1.31f, MAT_DIELECTRIC);
+    int orb_coral  = add_material(v3(0.45,0.12,0.18), v3(0,0,0), 0, 1.40f, MAT_DIELECTRIC);
+    int orb_emerald= add_material(v3(0.08,0.38,0.14), v3(0,0,0), 0, 1.58f, MAT_DIELECTRIC);
+    int orb_amber  = add_material(v3(0.40,0.22,0.06), v3(0,0,0), 0, 1.55f, MAT_DIELECTRIC);
+    int orb_ameth  = add_material(v3(0.25,0.10,0.40), v3(0,0,0), 0, 1.54f, MAT_DIELECTRIC);
+    int orb_diamond= add_material(v3(0.55,0.55,0.55), v3(0,0,0), 0, 2.42f, MAT_DIELECTRIC);
+    /* Metals — polished to catch the ring light and star reflections */
+    int obsidian   = add_material(v3(0.12,0.10,0.22), v3(0,0,0), 0.01f, 1, MAT_METAL);  /* near-mirror */
+    int dark_iron  = add_material(v3(0.28,0.28,0.32), v3(0,0,0), 0.12f, 1, MAT_METAL);  /* brushed */
 
     /* Stars — bright enough to be hit by recursive rays and light the scene */
     int star_warm  = add_material(v3(1.0,0.85,0.6), v3(8,3,0.6), 0, 1, MAT_EMISSIVE);
@@ -587,6 +587,10 @@ static void setup_cosmic(void) {
         }
     }
 
+    /* Key light — large warm sphere behind the orb cluster, lights them from within */
+    int key_light  = add_material(v3(0.90,0.72,0.45), v3(2.5,1.8,0.4), 0, 1, MAT_EMISSIVE);
+    add_sphere(v3(0.0f, 1.0f, -3.2f), 1.0f, key_light);
+
     /* Orb formation — colored glass, rough metal accents */
     add_sphere(v3(-2.2f, 0.8f, -2.2f), 0.9f, orb_ice);     /* top-left: ice glass */
     add_sphere(v3(2.0f,  0.5f, -1.8f), 0.75f, orb_coral);  /* top-right: coral */
@@ -603,12 +607,12 @@ static void setup_cosmic(void) {
     add_sphere(v3(-0.8f, -0.6f, -2.0f), 0.30f, orb_ameth);
     add_sphere(v3(1.4f,  -0.3f, -2.4f), 0.28f, obsidian);
 
-    g_camera.eye = v3(0, 0.1f, 3.2f);
-    g_camera.lookat = v3(0, 0.1f, -2.0f);
+    g_camera.eye = v3(0, 0.3f, 4.8f);
+    g_camera.lookat = v3(0, 0.0f, -2.0f);
     g_camera.up = v3(0, 1, 0);
-    g_camera.fov = 65.0f;
+    g_camera.fov = 45.0f;
     g_camera.aperture = 0.0f;
-    g_camera.focus_dist = 4.5f;
+    g_camera.focus_dist = 6.8f;
 }
 
 /* ── Ray-sphere intersection ── */
